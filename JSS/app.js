@@ -251,6 +251,13 @@
       });
     }
 
+    if (state.route === "about") {
+      root.querySelector("#about-done")?.addEventListener("click", () => {
+        localStorage.setItem("joklob_seen_about", "1");
+        go("home");
+      });
+    }
+
     if (state.route === "more") {
       root.querySelector("#theme-dark")?.addEventListener("click", () => {
         document.documentElement.dataset.theme = "dark";
@@ -274,8 +281,12 @@
   document.addEventListener("DOMContentLoaded", () => {
     document.documentElement.dataset.theme = localStorage.getItem("joklob_theme") || "dark";
     document.querySelectorAll(".nav-btn").forEach((b) => b.addEventListener("click", () => go(b.dataset.route)));
+    document.querySelector("[data-route-about]")?.addEventListener("click", () => go("about"));
     window.addEventListener("hashchange", () => go((location.hash || "#home").slice(1), false));
-    go((location.hash || "#home").slice(1), false);
+    const first = !localStorage.getItem("joklob_seen_about");
+    const hash = (location.hash || "").slice(1);
+    if (first && (!hash || hash === "home")) go("about", true);
+    else go(hash || "home", false);
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
   });
 })();

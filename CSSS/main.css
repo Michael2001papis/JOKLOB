@@ -49,7 +49,18 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   min-height: 100dvh;
   padding: 14px 14px calc(var(--nav) + var(--safe-bottom) + 18px);
 }
-.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
+.about-link {
+  border: 1px solid var(--stroke);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 32px;
+}
 .brand { font-weight: 800; letter-spacing: .1em; color: var(--accent); font-size: 13px; }
 h1 { font-size: 1.3rem; margin: 0 0 8px; }
 h2 { font-size: 1.02rem; margin: 14px 0 8px; }
@@ -188,4 +199,15 @@ summary { cursor: pointer; color: var(--accent); }
 .hidden { display: none !important; }
 .copy-line { display: block; margin-top: 6px; font-size: 11px; color: var(--muted); }
 .copyright-src { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.guide-box {
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+.guide-box summary { font-weight: 700; font-size: 1.02rem; }
+.guide-box ul, .guide-ol { margin: 8px 0 0; padding-inline-start: 1.3rem; color: var(--muted); line-height: 1.55; }
+.guide-box li { margin: 6px 0; }
+.guide-ol { color: var(--muted); line-height: 1.55; padding-inline-start: 1.3rem; }
 
