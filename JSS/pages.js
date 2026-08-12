@@ -52,6 +52,8 @@ JOKLOB.pages = {
       <div class="grid-links">
         ${[
           ["r-overview", "לוח ראשי"],
+          ["upload", "העלאת מאגר"],
+          ["r-period", "בחירת תקופה"],
           ["r-hot", "חמים"],
           ["r-cold", "קרים"],
           ["r-quiet", "שקטים"],
@@ -59,10 +61,16 @@ JOKLOB.pages = {
           ["r-pressure", "מדד לחץ"],
           ["r-pairs", "זוגות ושלשות"],
           ["r-seq", "רצפים"],
+          ["r-parity", "זוגי / אי־זוגי"],
+          ["r-ranges", "פיזור טווחים"],
           ["r-shadow", "צל הגרלה"],
           ["r-strong", "המספר החזק"],
-          ["r-snapshot", "צילום מיכאל"],
+          ["home", "מחולל היברידי"],
+          ["backtest", "בדיקת עבר"],
+          ["r-compare", "השוואת מודלים"],
           ["r-history", "היסטוריית חישובים"],
+          ["r-snapshot", "צילום מיכאל"],
+          ["r-pdf", "ייצוא דוח PDF"],
         ]
           .map(([id, label]) => `<button type="button" class="tile" data-go="${id}"><b>${label}</b></button>`)
           .join("")}
@@ -237,6 +245,114 @@ JOKLOB.pages = {
       <h1>היסטוריית חישובים</h1>
       <div class="card">
         ${h.map((x) => `<div class="list-item"><b dir="ltr">${JOKLOB.ui.esc(x.seed)}</b><div class="muted">${x.method} · ${x.n} · ${new Date(x.at).toLocaleString("he-IL")}</div></div>`).join("") || "<p class='muted'>אין עדיין</p>"}
+      </div>`;
+  },
+
+  "r-period"() {
+    const st = JOKLOB.storage.get();
+    let custom = { from: "", to: "" };
+    try {
+      custom = JSON.parse(localStorage.getItem("joklob_custom_period") || "{}");
+    } catch {
+      /* ignore */
+    }
+    const opts = JOKLOB.data
+      .periodOptions()
+      .map(
+        (p) =>
+          `<option value="${p.id}"${p.id === (st.period || "format37") ? " selected" : ""}>${p.he}</option>`
+      )
+      .join("");
+    return `
+      <button type="button" class="btn secondary" data-go="research">← חזרה</button>
+      <h1>בחירת תקופה ופורמט</h1>
+      <div class="card">
+        <p>אין לערבב אוטומטית בין פורמטים. ברירת המחדל ליצירת צירופים: 6 מתוך 37 בלבד.</p>
+        <p class="muted">מספרים 38–49 אינם “קרים” בפורמט הנוכחי — הם פשוט לא משתתפים בו.</p>
+        <label>תקופה פעילה</label>
+        <select id="period-pick">${opts}</select>
+        <label>טווח מותאם — מתאריך</label>
+        <input id="custom-from" type="date" value="${custom.from || ""}" />
+        <label>עד תאריך</label>
+        <input id="custom-to" type="date" value="${custom.to || ""}" />
+        <button type="button" class="btn" id="save-period">שמור תקופה</button>
+        <div id="period-status" class="muted"></div>
+      </div>`;
+  },
+
+  "r-parity"() {
+    const { draws } = JOKLOB.generator.getDraws(JOKLOB.storage.get().period || "format37");
+    const sh = JOKLOB.analyze.shadowStats(draws);
+    const rows = sh.evenOddTop
+      .map(
+        (x) =>
+          `<tr><td>${x.pattern}</td><td>${x.count}</td><td>${(x.rate * 100).toFixed(1)}%</td></tr>`
+      )
+      .join("");
+    return `
+      <button type="button" class="btn secondary" data-go="research">← חזרה</button>
+      <h1>זוגי ואי־זוגי</h1>
+      <div class="card">
+        <p><span class="chip">חישוב מתמטי</span> מדגם ${sh.sampleSize}</p>
+        <p>ייחוס מחקר: מבנה נפוץ 3:3 (זוגי:אי־זוגי) — העדפה, לא חובה מוחלטת.</p>
+        <table class="tbl"><thead><tr><th>מבנה</th><th>הופעות</th><th>שיעור</th></tr></thead><tbody>${rows}</tbody></table>
+      </div>`;
+  },
+
+  "r-ranges"() {
+    const { draws } = JOKLOB.generator.getDraws(JOKLOB.storage.get().period || "format37");
+    const sh = JOKLOB.analyze.shadowStats(draws);
+    const labels = ["1–10", "11–20", "21–30", "31–37"];
+    const avgRows = labels
+      .map(
+        (l, i) =>
+          `<tr><td>${l}</td><td>${sh.bandAvg[i]}</td><td>${sh.bandDensityAvg[i]}</td></tr>`
+      )
+      .join("");
+    const patRows = sh.bandTop
+      .map(
+        (x) =>
+          `<tr><td>${x.pattern}</td><td>${x.count}</td><td>${(x.rate * 100).toFixed(1)}%</td></tr>`
+      )
+      .join("");
+    return `
+      <button type="button" class="btn secondary" data-go="research">← חזרה</button>
+      <h1>פיזור טווחים</h1>
+      <div class="card">
+        <p>${JOKLOB.ui.esc(sh.note)}</p>
+        <p>ייחוס מחקר: דפוסים כמו 2-2-1-1 או 1-2-2-1.</p>
+        <h2>ממוצע למספרים בטווח</h2>
+        <table class="tbl"><thead><tr><th>טווח</th><th>ממוצע גולמי</th><th>צפיפות מנורמלת</th></tr></thead><tbody>${avgRows}</tbody></table>
+        <h2>דפוסי פיזור נפוצים</h2>
+        <table class="tbl"><thead><tr><th>דפוס</th><th>הופעות</th><th>שיעור</th></tr></thead><tbody>${patRows}</tbody></table>
+      </div>`;
+  },
+
+  "r-compare"() {
+    const cmp = JOKLOB.storage.get().compare || [];
+    return `
+      <button type="button" class="btn secondary" data-go="research">← חזרה</button>
+      <h1>השוואת מודלים</h1>
+      <div class="card">
+        <p>מריץ את כל המודלים על אותו Seed ומדגם — להשוואת מבנה וציון התאמה (לא סיכוי זכייה).</p>
+        <label>Seed משותף</label>
+        <input id="cmp-seed" dir="ltr" placeholder="ריק = Seed חדש" />
+        <button type="button" class="btn" id="cmp-run">השווה מודלים</button>
+        <div id="cmp-out"></div>
+        <h2>שמורות אחרונות</h2>
+        <pre>${JOKLOB.ui.esc(JSON.stringify(cmp.slice(0, 5), null, 2))}</pre>
+      </div>`;
+  },
+
+  "r-pdf"() {
+    return `
+      <button type="button" class="btn secondary" data-go="research">← חזרה</button>
+      <h1>ייצוא דוח PDF</h1>
+      <div class="card">
+        <p>מייצא את אצוות הצירופים האחרונה (או מחולל חדש) כדוח להדפסה/PDF.</p>
+        <button type="button" class="btn" id="pdf-last">ייצא אצווה אחרונה</button>
+        <button type="button" class="btn secondary" data-go="home">עבור למחולל</button>
+        <div id="pdf-status" class="muted"></div>
       </div>`;
   },
 

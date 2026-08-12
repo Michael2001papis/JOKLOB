@@ -181,6 +181,70 @@
       });
     }
 
+    if (state.route === "r-period") {
+      root.querySelector("#save-period")?.addEventListener("click", () => {
+        const period = root.querySelector("#period-pick").value;
+        const from = root.querySelector("#custom-from").value;
+        const to = root.querySelector("#custom-to").value;
+        localStorage.setItem("joklob_custom_period", JSON.stringify({ from, to }));
+        const d = JOKLOB.storage.get();
+        d.period = period;
+        JOKLOB.storage.save(d);
+        const { draws } = JOKLOB.generator.getDraws(period);
+        root.querySelector("#period-status").textContent =
+          `נשמר: ${period} · ${draws.length} הגרלות במדגם הפעיל`;
+      });
+    }
+
+    if (state.route === "r-compare") {
+      root.querySelector("#cmp-run")?.addEventListener("click", () => {
+        const seed = root.querySelector("#cmp-seed").value.trim() || JOKLOB.rng.newSeed();
+        const period = JOKLOB.storage.get().period || "format37";
+        const methods = Object.keys(JOKLOB.generator.METHODS);
+        const rows = methods.map((method) => {
+          const batch = JOKLOB.generator.generate({
+            method,
+            period,
+            count: 1,
+            mode: "regular",
+            seed,
+            experimentalMode: "seed_only",
+          });
+          const t = batch.tickets[0];
+          return {
+            method,
+            label: t.methodLabel,
+            numbers: t.numbers,
+            strong: t.strong,
+            researchScore: t.researchScore,
+            kind: t.kind,
+            sum: t.signature?.sum,
+          };
+        });
+        const d = JOKLOB.storage.get();
+        d.compare.unshift({ at: new Date().toISOString(), seed, period, rows });
+        d.compare = d.compare.slice(0, 20);
+        JOKLOB.storage.save(d);
+        root.querySelector("#cmp-out").innerHTML = `
+          <p>Seed משותף: <span dir="ltr">${JOKLOB.ui.esc(seed)}</span></p>
+          <pre>${JOKLOB.ui.esc(JSON.stringify(rows, null, 2))}</pre>
+          <p class="muted">ציון התאמה למודל ≠ סיכוי זכייה. השוואה מבנית בלבד.</p>`;
+      });
+    }
+
+    if (state.route === "r-pdf") {
+      root.querySelector("#pdf-last")?.addEventListener("click", () => {
+        const batch = state.lastBatch || JOKLOB.storage.get().last;
+        const status = root.querySelector("#pdf-status");
+        if (!batch?.tickets?.length) {
+          status.textContent = "אין אצווה אחרונה — צרו צירוף במחולל קודם.";
+          return;
+        }
+        JOKLOB.pdf.exportBatch(batch);
+        status.textContent = "נפתח חלון הדפסה/PDF.";
+      });
+    }
+
     if (state.route === "more") {
       root.querySelector("#theme-dark")?.addEventListener("click", () => {
         document.documentElement.dataset.theme = "dark";

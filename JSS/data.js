@@ -161,7 +161,7 @@ JOKLOB.data = {
     return { draws: base, added: added.length, duplicates: duplicates.length };
   },
 
-  filterPeriod(draws, period) {
+  filterPeriod(draws, period, customRange) {
     const fmt37 = draws.filter((d) => (d.format || this.detectFormat(d.numbers)) === this.FORMAT_37);
     const byDate = [...fmt37].filter((d) => d.date).sort((a, b) => a.date.localeCompare(b.date));
     const lastN = (n) => byDate.slice(-n);
@@ -171,6 +171,18 @@ JOKLOB.data = {
       const iso = cut.toISOString().slice(0, 10);
       return byDate.filter((d) => d.date >= iso);
     };
+    if (period === "custom" || (typeof period === "string" && period.startsWith("custom:"))) {
+      const range = customRange || (() => {
+        try {
+          return JSON.parse(localStorage.getItem("joklob_custom_period") || "{}");
+        } catch {
+          return {};
+        }
+      })();
+      const from = range.from || "1900-01-01";
+      const to = range.to || "9999-12-31";
+      return byDate.filter((d) => d.date >= from && d.date <= to);
+    }
     switch (period) {
       case "all":
         return draws;
@@ -212,6 +224,7 @@ JOKLOB.data = {
       { id: "n50", he: "50 אחרונות" },
       { id: "n25", he: "25 אחרונות" },
       { id: "n10", he: "10 אחרונות" },
+      { id: "custom", he: "טווח מותאם אישית" },
     ];
   },
 };

@@ -320,6 +320,26 @@ JOKLOB.analyze = {
     const q = (p) => sums[Math.floor((sums.length - 1) * p)] || 114;
     const mean = sums.reduce((a, b) => a + b, 0) / (sums.length || 1);
     const median = q(0.5);
+    const evenOddMap = {};
+    const bandMap = {};
+    let bandTotals = [0, 0, 0, 0];
+    sigs.forEach((s) => {
+      const eo = s.evenOdd.join(":");
+      evenOddMap[eo] = (evenOddMap[eo] || 0) + 1;
+      bandMap[s.bandPattern] = (bandMap[s.bandPattern] || 0) + 1;
+      s.bands.forEach((c, i) => {
+        bandTotals[i] += c;
+      });
+    });
+    const evenOddTop = Object.entries(evenOddMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([k, c]) => ({ pattern: k, count: c, rate: c / (sigs.length || 1) }));
+    const bandTop = Object.entries(bandMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([k, c]) => ({ pattern: k, count: c, rate: c / (sigs.length || 1) }));
+    const N = sigs.length || 1;
     return {
       mean,
       median,
@@ -330,6 +350,15 @@ JOKLOB.analyze = {
       researchRef: JOKLOB.snapshot.shadowRef,
       note: "טווח 31–37 מכיל 7 מספרים בלבד — אין להשוות ספירה גולמית לטווחים של 10.",
       sampleSize: draws.length,
+      evenOddTop,
+      bandTop,
+      bandAvg: bandTotals.map((t) => +(t / N).toFixed(3)),
+      bandDensityAvg: [
+        +(bandTotals[0] / N / 10).toFixed(4),
+        +(bandTotals[1] / N / 10).toFixed(4),
+        +(bandTotals[2] / N / 10).toFixed(4),
+        +(bandTotals[3] / N / 7).toFixed(4),
+      ],
     };
   },
 
