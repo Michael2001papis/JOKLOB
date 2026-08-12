@@ -6,6 +6,23 @@
 
 אין כלי להימורים או ניבוי הגרלות.
 
+## Vercel (ייבוא מ-GitHub)
+
+Root Directory נשאר `./`. הקבצים `vercel.json` ו-`package.json` בשורש ממלאים את הגדרות הבנייה:
+
+| שדה במסך | ערך |
+|---|---|
+| Root Directory | `./` |
+| Build Command | `npm run vercel-build` |
+| Output Directory | `frontend/dist` |
+| Install Command | `npm install` |
+
+משתנה סביבה (Import `.env.example` או הוספה ידנית):
+
+- `VITE_API_URL` — כתובת ה-FastAPI בפרודקשן, בלי `/` בסוף. אם ריק, הקריאות הולכות ל-`/api` באותו דומיין.
+
+ה-backend (SymPy/SciPy) לא רץ על Vercel. יש לארח אותו בנפרד ולמלא `VITE_API_URL`.
+
 ## הרצה מקומית (Windows)
 
 דרושים Python 3.11+ ו־Node.js 18+.

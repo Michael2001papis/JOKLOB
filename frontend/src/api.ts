@@ -1,4 +1,9 @@
 const TOKEN_KEY = "joklob_token";
+const API_BASE = String(import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+
+function apiUrl(path: string) {
+  return `${API_BASE}${path}`;
+}
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);
@@ -15,7 +20,7 @@ async function req(path: string, init: RequestInit = {}) {
   if (!(init.body instanceof FormData) && init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-  const res = await fetch(path, { ...init, headers });
+  const res = await fetch(apiUrl(path), { ...init, headers });
   if (res.status === 401) {
     setToken(null);
     if (!path.includes("/auth/login")) window.location.assign("/login");
@@ -33,7 +38,7 @@ async function req(path: string, init: RequestInit = {}) {
 
 export async function downloadAuth(path: string, filename: string) {
   const token = getToken();
-  const res = await fetch(path, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  const res = await fetch(apiUrl(path), { headers: token ? { Authorization: `Bearer ${token}` } : {} });
   if (!res.ok) throw new Error("Download failed");
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);

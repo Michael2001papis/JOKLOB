@@ -1,0 +1,13 @@
+{
+  "name": "joklob-root",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w joklob",
+    "build": "npm run build -w joklob",
+    "vercel-build": "npm run build -w joklob"
+  }
+}
