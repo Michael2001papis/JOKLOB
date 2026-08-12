@@ -1,6 +1,0 @@
-{
-  "name": "joklob-static",
-  "private": true,
-  "version": "2.0.0",
-  "description": "Static HTML/CSS/JS JOKLOB site — no build step"
-}

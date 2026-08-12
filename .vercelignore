@@ -1,10 +1,2 @@
-frontend/
-backend/
-node_modules/
 .git/
-*.ps1
-scripts/
-package.json
-package-lock.json
 README.md
-.env.example
