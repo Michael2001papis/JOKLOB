@@ -1,12 +1,12 @@
 window.JOKLOB = window.JOKLOB || {};
 
 JOKLOB.storage = {
-  key: "joklob_data_v1",
+  key: "joklob_saved_v2",
   load() {
     try {
-      return JSON.parse(localStorage.getItem(this.key) || "{}");
+      return JSON.parse(localStorage.getItem(this.key) || '{"tickets":[],"last":null,"compare":[]}');
     } catch {
-      return {};
+      return { tickets: [], last: null, compare: [] };
     }
   },
   save(data) {
@@ -14,22 +14,30 @@ JOKLOB.storage = {
   },
   get() {
     const d = this.load();
-    if (!d.projects) d.projects = [];
-    if (!d.history) d.history = [];
-    if (!d.docs) d.docs = [];
-    if (!d.drafts) d.drafts = {};
+    if (!d.tickets) d.tickets = [];
+    if (!d.compare) d.compare = [];
     return d;
   },
-  set(mutator) {
+  setLast(batch) {
     const d = this.get();
-    mutator(d);
+    d.last = batch;
     this.save(d);
-    return d;
   },
-  addHistory(entry) {
-    this.set((d) => {
-      d.history.unshift({ ...entry, at: new Date().toISOString() });
-      d.history = d.history.slice(0, 80);
-    });
+  saveTicket(ticket) {
+    const d = this.get();
+    d.tickets.unshift(ticket);
+    d.tickets = d.tickets.slice(0, 100);
+    this.save(d);
+  },
+  toggleCompare(ticket) {
+    const d = this.get();
+    const i = d.compare.findIndex((t) => t.calcId === ticket.calcId);
+    if (i >= 0) d.compare.splice(i, 1);
+    else {
+      d.compare.unshift(ticket);
+      d.compare = d.compare.slice(0, 6);
+    }
+    this.save(d);
+    return d.compare;
   },
 };

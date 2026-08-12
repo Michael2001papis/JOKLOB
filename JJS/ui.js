@@ -1,70 +1,56 @@
 window.JOKLOB = window.JOKLOB || {};
 
 JOKLOB.ui = {
-  escape(s) {
+  esc(s) {
     return String(s ?? "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
   },
-
-  math(tex, display = true) {
-    if (!tex) return "";
-    try {
-      return `<div class="math">${katex.renderToString(String(tex), { throwOnError: false, displayMode: display })}</div>`;
-    } catch {
-      return `<div class="math"><code>${this.escape(tex)}</code></div>`;
-    }
+  balls(numbers, strong) {
+    const main = (numbers || []).map((n) => `<div class="ball">${n}</div>`).join("");
+    const s = strong != null ? `<div class="ball strong" title="מספר חזק">${strong}</div>` : "";
+    return `<div class="balls">${main}${s}</div>`;
   },
-
-  tag(code) {
-    return JOKLOB.certainty.html(code);
-  },
-
-  resultCard(result) {
-    if (!result) return "";
-    const steps = (result.steps || [])
-      .map((s, i) => `<div><b>${i + 1}. ${this.escape(s.title)}</b><div class="muted">${this.escape(s.method || "")}</div>${this.math(s.latex)}</div>`)
+  ticketCard(t, opts = {}) {
+    const exp = t.experimental ? `<span class="chip exp">מודל ניסיוני</span>` : "";
+    const weights = Object.entries(t.weightsUsed || {})
+      .filter(([, v]) => v > 0)
+      .map(([k, v]) => `${JOKLOB.metrics.labels[k] || k}: ${Number(v).toFixed(2)}`)
+      .join(" · ");
+    const reasons = Object.entries(t.numberReasons || {})
+      .map(([n, rs]) => `<li><b>${n}</b>: ${this.esc((rs || []).join("; "))}</li>`)
       .join("");
     return `
-      <div class="card" style="margin-top:12px">
-        ${this.tag(result.certainty)}
-        ${result.error ? `<p class="err">${this.escape(result.error)}</p>` : ""}
-        ${result.warning ? `<p class="err">${this.escape(result.warning)}</p>` : ""}
-        <h2>תוצאה</h2>
-        ${result.latex ? this.math(result.latex) : ""}
-        <pre>${this.escape(typeof result.result === "object" ? JSON.stringify(result.result, null, 2) : result.result)}</pre>
-        ${steps ? `<h2>שלבים</h2>${steps}` : ""}
-        ${result.verification ? `<h2>אימות</h2><pre>${this.escape(JSON.stringify(result.verification, null, 2))}</pre>` : ""}
-        <h2>מגבלות</h2>
-        <p>${this.escape(result.limitations || "")}</p>
-      </div>`;
-  },
-
-  chart(canvasId, xs, ys) {
-    requestAnimationFrame(() => {
-      const c = document.getElementById(canvasId);
-      if (!c || !xs || !xs.length) return;
-      const ctx = c.getContext("2d");
-      const w = c.width = c.clientWidth * devicePixelRatio;
-      const h = c.height = c.clientHeight * devicePixelRatio;
-      ctx.clearRect(0, 0, w, h);
-      const minX = Math.min(...xs), maxX = Math.max(...xs);
-      const minY = Math.min(...ys), maxY = Math.max(...ys);
-      const pad = 24 * devicePixelRatio;
-      const sx = (x) => pad + ((x - minX) / (maxX - minX || 1)) * (w - 2 * pad);
-      const sy = (y) => h - pad - ((y - minY) / (maxY - minY || 1)) * (h - 2 * pad);
-      ctx.strokeStyle = "rgba(126,231,255,0.25)";
-      ctx.beginPath(); ctx.moveTo(pad, h - pad); ctx.lineTo(w - pad, h - pad); ctx.stroke();
-      ctx.strokeStyle = "#7ee7ff";
-      ctx.lineWidth = 2 * devicePixelRatio;
-      ctx.beginPath();
-      xs.forEach((x, i) => {
-        const X = sx(x), Y = sy(ys[i]);
-        if (i === 0) ctx.moveTo(X, Y); else ctx.lineTo(X, Y);
-      });
-      ctx.stroke();
-    });
+      <article class="card ticket" data-calc="${this.esc(t.calcId)}">
+        <div class="chip">${this.esc(t.methodLabel)}</div> ${exp}
+        <div class="muted">קבוצה ${t.group}${opts.mode === "double" || t.board > 1 ? ` · לוח ${t.board}` : ""}</div>
+        ${this.balls(t.numbers, t.strong)}
+        <div class="ticket-meta">
+          ציון איזון: <b>${t.balanceScore.toFixed(3)}</b> ·
+          ציון משוקלל: <b>${t.score.toFixed(3)}</b> ·
+          סכום: <b>${t.sum}</b><br>
+          מזהה: <span dir="ltr">${this.esc(t.calcId)}</span><br>
+          Seed: <span dir="ltr">${this.esc(t.seed)}</span><br>
+          נוצר: ${this.esc(new Date(t.createdAt).toLocaleString("he-IL"))}
+        </div>
+        <details>
+          <summary>שקיפות החישוב</summary>
+          <p><b>נתונים שנבדקו:</b> ${t.dataChecked.draws} הגרלות · ${this.esc(t.dataChecked.sourceNote)}</p>
+          <p><b>משקלים:</b> ${this.esc(weights || "אין (אקראי טהור)")}</p>
+          <p><b>מדדים:</b></p>
+          <pre>${this.esc(JSON.stringify(t.metricsDetail, null, 2))}</pre>
+          <p><b>למה כל מספר:</b></p>
+          <ul>${reasons}</ul>
+          <p class="warn">${this.esc(t.disclaimer)}</p>
+        </details>
+        <div class="actions">
+          <button type="button" class="btn secondary" data-act="save" data-id="${this.esc(t.calcId)}">שמירה</button>
+          <button type="button" class="btn secondary" data-act="compare" data-id="${this.esc(t.calcId)}">השוואה</button>
+          <button type="button" class="btn secondary" data-act="variant" data-id="${this.esc(t.calcId)}">וריאציה</button>
+          <button type="button" class="btn secondary" data-act="replay" data-id="${this.esc(t.calcId)}">אותו Seed</button>
+        </div>
+      </article>`;
   },
 };

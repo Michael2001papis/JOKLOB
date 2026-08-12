@@ -4,43 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
   <meta name="theme-color" content="#070b16" />
-  <meta name="description" content="JOKLOB — מעבדת מחקר למתמטיקה ולפיזיקה" />
+  <meta name="description" content="JOKLOB — יצירת צירופי לוטו אקראית־מחושבת (1–37 + חזק 1–7)" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/CSSS/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/CSSS/icon.svg" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" />
   <link rel="stylesheet" href="/CSSS/main.css" />
   <title>JOKLOB</title>
 </head>
 <body>
   <div id="app" class="app">
     <header class="topbar">
-      <div class="brand">JOKLOB LAB</div>
+      <div class="brand">JOKLOB</div>
       <div id="screen-title" class="muted"></div>
     </header>
-
     <main id="content" class="content"></main>
-
-    <nav class="nav" aria-label="ניווט ראשי">
-      <button type="button" data-route="home" class="nav-btn active">בית</button>
-      <button type="button" data-route="labs" class="nav-btn">מעבדות</button>
-      <button type="button" data-route="projects" class="nav-btn">פרויקטים</button>
-      <button type="button" data-route="docs" class="nav-btn">מסמכים</button>
+    <nav class="nav" aria-label="ניווט">
+      <button type="button" data-route="home" class="nav-btn active">יצירה</button>
+      <button type="button" data-route="weights" class="nav-btn">משקלים</button>
+      <button type="button" data-route="saved" class="nav-btn">שמורים</button>
+      <button type="button" data-route="data" class="nav-btn">נתונים</button>
       <button type="button" data-route="more" class="nav-btn">עוד</button>
     </nav>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjs@13.2.0/lib/browser/math.js"></script>
-  <script src="/JJS/i18n.js"></script>
+  <script src="/JJS/rng.js"></script>
+  <script src="/JJS/history.js"></script>
+  <script src="/JJS/metrics.js"></script>
+  <script src="/JJS/generator.js"></script>
   <script src="/JJS/storage.js"></script>
-  <script src="/JJS/certainty.js"></script>
-  <script src="/JJS/math-lab.js"></script>
-  <script src="/JJS/numbers-lab.js"></script>
-  <script src="/JJS/physics-lab.js"></script>
-  <script src="/JJS/axioms-lab.js"></script>
-  <script src="/JJS/between-lab.js"></script>
+  <script src="/JJS/pdf.js"></script>
   <script src="/JJS/ui.js"></script>
   <script src="/JJS/pages.js"></script>
   <script src="/JJS/app.js"></script>

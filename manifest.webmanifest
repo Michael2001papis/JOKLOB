@@ -1,7 +1,7 @@
 {
   "name": "JOKLOB",
   "short_name": "JOKLOB",
-  "description": "מעבדת מחקר למתמטיקה ולפיזיקה",
+  "description": "יצירת צירופי לוטו אקראית־מחושבת",
   "lang": "he",
   "dir": "rtl",
   "start_url": "/",
