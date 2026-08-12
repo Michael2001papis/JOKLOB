@@ -1,13 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "vite",
-  "installCommand": "npm install",
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "frontend/dist",
+  "cleanUrls": true,
   "rewrites": [
+    { "source": "/((?!css/|js/|assets/|manifest\\.webmanifest|sw\\.js).*)", "destination": "/index.html" }
+  ],
+  "headers": [
     {
-      "source": "/((?!assets/|icon|manifest|sw\\.js|workbox).*)",
-      "destination": "/index.html"
+      "source": "/sw.js",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     }
   ]
 }
