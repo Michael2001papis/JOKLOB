@@ -1,3 +1,8 @@
+/*!
+ * JOKLOB Research Engine — מנוע המחקר של מיכאל
+ * Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved.
+ * כל הזכויות שמורות. אין להעתיק, לשכפל או להפיץ ללא רשות מפורשת בכתב.
+ */
 :root {
   --bg: #070b16;
   --bg2: #0e1630;
@@ -181,4 +186,6 @@ summary { cursor: pointer; color: var(--accent); }
 .warn-box { margin: 10px 0; }
 .app { padding-bottom: calc(var(--nav) + var(--safe-bottom) + 48px); }
 .hidden { display: none !important; }
+.copy-line { display: block; margin-top: 6px; font-size: 11px; color: var(--muted); }
+.copyright-src { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 

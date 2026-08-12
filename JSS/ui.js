@@ -1,3 +1,9 @@
+/*!
+ * JOKLOB Research Engine — מנוע המחקר של מיכאל
+ * Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved.
+ * כל הזכויות שמורות. אין להעתיק, לשכפל, להפיץ או להשתמש בקוד זה ללא רשות מפורשת בכתב.
+ */
+
 window.JOKLOB = window.JOKLOB || {};
 
 JOKLOB.ui = {
@@ -59,6 +65,7 @@ JOKLOB.ui = {
           <p><b>תרומת רכיבים:</b> ${this.esc(parts)}</p>
           <pre>${this.esc(JSON.stringify(t.scoreWeights || {}, null, 2))}</pre>
           <p class="warn">${this.esc(t.disclaimer)}</p>
+          <p class="muted">© 2026 JOKLOB / מיכאל · כל הזכויות שמורות</p>
         </details>
         <div class="actions">
           <button type="button" class="btn secondary" data-act="save" data-id="${this.esc(t.calcId)}">שמירה</button>

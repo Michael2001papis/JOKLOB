@@ -1,11 +1,19 @@
 <!DOCTYPE html>
+<!--
+  JOKLOB Research Engine — מנוע המחקר של מיכאל
+  Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved.
+  כל הזכויות שמורות. אין להעתיק, לשכפל, להפיץ או להשתמש ללא רשות מפורשת בכתב.
+-->
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
   <meta name="theme-color" content="#070b16" />
   <meta name="description" content="JOKLOB Research Engine — מנוע המחקר של מיכאל" />
+  <meta name="author" content="מיכאל / JOKLOB" />
+  <meta name="copyright" content="Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="author" href="/humans.txt" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/CSSS/icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/CSSS/main.css" />
@@ -18,7 +26,10 @@
       <div id="screen-title" class="muted"></div>
     </header>
     <main id="content" class="content"></main>
-    <footer class="science-footer">הנתונים עוזרים להבין את העבר — הם אינם מבטיחים את העתיד.</footer>
+    <footer class="science-footer">
+      הנתונים עוזרים להבין את העבר — הם אינם מבטיחים את העתיד.<br>
+      <span class="copy-line">© 2026 JOKLOB / מיכאל · כל הזכויות שמורות</span>
+    </footer>
     <nav class="nav" aria-label="ניווט">
       <button type="button" data-route="home" class="nav-btn active">מחולל</button>
       <button type="button" data-route="research" class="nav-btn">מחקר</button>
@@ -27,6 +38,7 @@
       <button type="button" data-route="more" class="nav-btn">עוד</button>
     </nav>
   </div>
+  <span class="copyright-src" aria-hidden="true">Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved. כל הזכויות שמורות.</span>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="/JSS/rng.js"></script>

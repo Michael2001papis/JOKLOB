@@ -1,0 +1,7 @@
+/* TEAM */
+Owner: מיכאל
+Project: JOKLOB Research Engine — מנוע המחקר של מיכאל
+
+/* COPYRIGHT */
+Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved.
+כל הזכויות שמורות. אין להעתיק או להפיץ ללא רשות.

@@ -1,0 +1,9 @@
+JOKLOB Research Engine — מנוע המחקר של מיכאל
+Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved.
+כל הזכויות שמורות.
+
+אין להעתיק, לשכפל, להפיץ, למכור, לשנות או להשתמש בקוד, בעיצוב,
+במנוע המחקר או בתוכן האפליקציה ללא רשות מפורשת בכתב מבעל הזכויות.
+
+This software, its source, research engine, UI, and documentation
+are proprietary. Unauthorized use is prohibited.

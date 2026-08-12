@@ -1,0 +1,4 @@
+# Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved.
+# כל הזכויות שמורות. JOKLOB Research Engine — מנוע המחקר של מיכאל.
+User-agent: *
+Allow: /

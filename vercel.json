@@ -4,7 +4,7 @@
   "rewrites": [
     { "source": "/", "destination": "/HTML/index.html" },
     { "source": "/HTML", "destination": "/HTML/index.html" },
-    { "source": "/((?!HTML/|CSSS/|JSS/|manifest\\.webmanifest|sw\\.js|index\\.html).*)", "destination": "/HTML/index.html" }
+    { "source": "/((?!HTML/|CSSS/|JSS/|manifest\\.webmanifest|sw\\.js|index\\.html|COPYRIGHT\\.txt|humans\\.txt|robots\\.txt).*)", "destination": "/HTML/index.html" }
   ],
   "headers": [
     {

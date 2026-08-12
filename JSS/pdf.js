@@ -1,3 +1,9 @@
+/*!
+ * JOKLOB Research Engine — מנוע המחקר של מיכאל
+ * Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved.
+ * כל הזכויות שמורות. אין להעתיק, לשכפל, להפיץ או להשתמש בקוד זה ללא רשות מפורשת בכתב.
+ */
+
 window.JOKLOB = window.JOKLOB || {};
 
 JOKLOB.pdf = {
@@ -30,6 +36,8 @@ JOKLOB.pdf = {
       <p>שיטה: ${this.esc(JOKLOB.generator.METHODS[batch.method]?.he || batch.method)} · Seed: <span dir="ltr">${this.esc(batch.seed)}</span></p>
       <p>צילום ייחוס: ${this.esc(JOKLOB.snapshot.name)}</p>
       ${rows}
+      <p style="margin-top:24px;font-size:12px;color:#555">© 2026 JOKLOB / מיכאל · כל הזכויות שמורות. אין להעתיק או להפיץ ללא רשות.</p>
+      <!-- Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved. -->
       <script>onload=()=>print()<\/script></body></html>`);
     w.document.close();
   },

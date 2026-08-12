@@ -1,3 +1,9 @@
+﻿/*!
+ * JOKLOB Research Engine — מנוע המחקר של מיכאל
+ * Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved.
+ * כל הזכויות שמורות. אין להעתיק, לשכפל, להפיץ או להשתמש בקוד זה ללא רשות מפורשת בכתב.
+ */
+
 const CACHE = "joklob-research-v1";
 const ASSETS = [
   "/",
@@ -19,6 +25,9 @@ const ASSETS = [
   "/JSS/pages.js",
   "/JSS/app.js",
   "/manifest.webmanifest",
+  "/COPYRIGHT.txt",
+  "/humans.txt",
+  "/robots.txt",
 ];
 
 self.addEventListener("install", (e) => {

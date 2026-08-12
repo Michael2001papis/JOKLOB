@@ -1,4 +1,15 @@
+/*!
+ * JOKLOB Research Engine — מנוע המחקר של מיכאל
+ * Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved.
+ * כל הזכויות שמורות. אין להעתיק, לשכפל, להפיץ או להשתמש בקוד זה ללא רשות מפורשת בכתב.
+ */
+
 window.JOKLOB = window.JOKLOB || {};
+JOKLOB.copyright = {
+  owner: "JOKLOB / מיכאל",
+  year: 2026,
+  notice: "Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved. כל הזכויות שמורות.",
+};
 
 JOKLOB.pages = {
   home() {
@@ -409,6 +420,11 @@ JOKLOB.pages = {
         <h2>שמורים (${saved.length})</h2>
         ${saved.slice(0, 8).map((t) => `<div class="muted" dir="ltr">${t.numbers.join("-")} | ${t.strong}</div>`).join("") || "<p class='muted'>אין</p>"}
         <button type="button" class="btn danger" id="wipe">מחק נתונים מקומיים</button>
+      </div>
+      <div class="card">
+        <h2>זכויות יוצרים</h2>
+        <p><b>© 2026 JOKLOB / מיכאל · כל הזכויות שמורות</b></p>
+        <p>JOKLOB Research Engine — מנוע המחקר של מיכאל הוא יצירה מוגנת. אין להעתיק, לשכפל, להפיץ או להשתמש בקוד, בעיצוב או במנוע ללא רשות מפורשת בכתב.</p>
       </div>`;
   },
 };

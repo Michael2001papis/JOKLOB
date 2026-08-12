@@ -1,3 +1,9 @@
+/*!
+ * JOKLOB Research Engine — מנוע המחקר של מיכאל
+ * Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved.
+ * כל הזכויות שמורות. אין להעתיק, לשכפל, להפיץ או להשתמש בקוד זה ללא רשות מפורשת בכתב.
+ */
+
 window.JOKLOB = window.JOKLOB || {};
 
 JOKLOB.storage = {
