@@ -1,18 +1,23 @@
-const CACHE = "joklob-lotto-v1";
+const CACHE = "joklob-research-v1";
 const ASSETS = [
   "/",
   "/index.html",
+  "/HTML/",
+  "/HTML/index.html",
   "/CSSS/main.css",
   "/CSSS/icon.svg",
-  "/JJS/rng.js",
-  "/JJS/history.js",
-  "/JJS/metrics.js",
-  "/JJS/generator.js",
-  "/JJS/storage.js",
-  "/JJS/pdf.js",
-  "/JJS/ui.js",
-  "/JJS/pages.js",
-  "/JJS/app.js",
+  "/JSS/rng.js",
+  "/JSS/snapshot.js",
+  "/JSS/data.js",
+  "/JSS/analyze.js",
+  "/JSS/hybrid.js",
+  "/JSS/backtest.js",
+  "/JSS/generator.js",
+  "/JSS/storage.js",
+  "/JSS/pdf.js",
+  "/JSS/ui.js",
+  "/JSS/pages.js",
+  "/JSS/app.js",
   "/manifest.webmanifest",
 ];
 

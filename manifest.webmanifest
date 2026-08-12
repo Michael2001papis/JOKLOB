@@ -1,20 +1,12 @@
 {
   "name": "JOKLOB",
   "short_name": "JOKLOB",
-  "description": "יצירת צירופי לוטו אקראית־מחושבת",
+  "description": "JOKLOB Research Engine — מנוע המחקר של מיכאל",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "/",
+  "start_url": "/HTML/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#070b16",
   "theme_color": "#070b16",
-  "icons": [
-    {
-      "src": "/CSSS/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
+  "icons": [{ "src": "/CSSS/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
 }

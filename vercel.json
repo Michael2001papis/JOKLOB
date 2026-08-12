@@ -2,7 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/((?!CSSS/|JJS/|manifest\\.webmanifest|sw\\.js).*)", "destination": "/index.html" }
+    { "source": "/", "destination": "/HTML/index.html" },
+    { "source": "/HTML", "destination": "/HTML/index.html" },
+    { "source": "/((?!HTML/|CSSS/|JSS/|manifest\\.webmanifest|sw\\.js|index\\.html).*)", "destination": "/HTML/index.html" }
   ],
   "headers": [
     {

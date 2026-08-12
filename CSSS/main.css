@@ -151,3 +151,34 @@ pre {
 }
 details { margin-top: 8px; }
 summary { cursor: pointer; color: var(--accent); }
+
+.science-footer {
+  position: sticky;
+  bottom: calc(var(--nav) + var(--safe-bottom));
+  margin: 16px 0 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--warn);
+  padding: 8px;
+  border-top: 1px solid var(--stroke);
+}
+.engine-title { color: var(--violet); font-weight: 700; }
+.grid-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.tile {
+  min-height: 64px;
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+.tbl { width: 100%; border-collapse: collapse; direction: ltr; text-align: left; font-size: 13px; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--stroke); padding: 6px; color: var(--text); }
+.warn-box { margin: 10px 0; }
+.app { padding-bottom: calc(var(--nav) + var(--safe-bottom) + 48px); }
+.hidden { display: none !important; }
+

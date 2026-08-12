@@ -1,15 +1,11 @@
 window.JOKLOB = window.JOKLOB || {};
 
-/** Secure random + reproducible seeded PRNG (mulberry32). */
+/** Secure + seeded RNG */
 JOKLOB.rng = {
-  bytes(n) {
-    const a = new Uint32Array(n);
-    crypto.getRandomValues(a);
-    return a;
-  },
   newSeed() {
-    const a = this.bytes(2);
-    return (`${a[0].toString(16)}${a[1].toString(16)}`).padStart(16, "0");
+    const a = new Uint32Array(2);
+    crypto.getRandomValues(a);
+    return `${a[0].toString(16).padStart(8, "0")}${a[1].toString(16).padStart(8, "0")}`;
   },
   fromSeed(seed) {
     let h = 2166136261 >>> 0;
@@ -20,14 +16,12 @@ JOKLOB.rng = {
     }
     let t = h >>> 0;
     return function next() {
-      t |= 0;
       t = (t + 0x6d2b79f5) | 0;
       let r = Math.imul(t ^ (t >>> 15), 1 | t);
       r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
       return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
     };
   },
-  /** Fisher–Yates sample k distinct ints from [lo, hi] inclusive */
   sampleDistinct(lo, hi, k, rand) {
     const pool = [];
     for (let i = lo; i <= hi; i++) pool.push(i);
@@ -39,5 +33,14 @@ JOKLOB.rng = {
   },
   int(lo, hi, rand) {
     return lo + Math.floor(rand() * (hi - lo + 1));
+  },
+  pickWeighted(items, weights, rand) {
+    const sum = weights.reduce((a, b) => a + b, 0) || 1;
+    let r = rand() * sum;
+    for (let i = 0; i < items.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return items[i];
+    }
+    return items[items.length - 1];
   },
 };
