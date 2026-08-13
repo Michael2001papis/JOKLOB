@@ -31,12 +31,14 @@ JOKLOB.generator = {
     const seed = opts.seed || JOKLOB.rng.newSeed();
     const { db, draws } = this.getDraws(period);
     const now = new Date();
-    const experimentalCtx = {
-      day: now.getDay(),
-      month: now.getMonth() + 1,
-      hour: now.getHours(),
-      mode: opts.experimentalMode || "seed_only",
-    };
+    const experimentalCtx = JOKLOB.world
+      ? JOKLOB.world.toCtx(opts.experimentalMode || "seed_only")
+      : {
+          day: now.getDay(),
+          month: now.getMonth() + 1,
+          hour: now.getHours(),
+          mode: opts.experimentalMode || "seed_only",
+        };
 
     const ticketsNeeded = mode === "double" ? count * 2 : count;
     let tickets = [];
@@ -134,6 +136,21 @@ JOKLOB.generator = {
     const pressure = (built.pressureTop || []).filter((n) => p.numbers.includes(n));
     const hot = (built.hot || []).filter((n) => p.numbers.includes(n));
     const cold = (built.cold || []).filter((n) => p.numbers.includes(n));
+    const sig = p.signature || {};
+    const seqs = [];
+    const sorted = [...(p.numbers || [])].sort((a, b) => a - b);
+    for (let si = 1; si < sorted.length; si++) {
+      if (sorted[si] === sorted[si - 1] + 1) seqs.push(`${sorted[si - 1]}-${sorted[si]}`);
+    }
+    const steps = [
+      "נטענה גרסת המאגר שנבחרה וסוננה לפורמט 6 מתוך 37.",
+      "חושבו מחדש שכיחות, אש, לחץ, זוגות, רצפים וצל הגרלה.",
+      "נוצר מאגר שישיות חוקיות (בלי כפילות, בטווח 1–37).",
+      "דורגה כל שישייה לפי ציון התאמה למודל המחקרי.",
+      "נבחרה שישייה באקראיות משוקללת מבין המועמדות המובילות — לא בהכרח הציון הגבוה.",
+      "המספר החזק נבחר במנוע נפרד (1–7).",
+      "נשמרו Seed, גרסת נתונים ומשקלים לשחזור.",
+    ];
     return {
       id,
       calcId: `${seed.slice(0, 8)}-${i + 1}-${id.slice(0, 8)}`,
@@ -166,6 +183,9 @@ JOKLOB.generator = {
       experimentalMode,
       experimentalCtx,
       randomShare: (p.scoreWeights && p.scoreWeights.random) || 0.05,
+      pairsIncluded: sig.foundPairs || [],
+      sequencesIncluded: seqs,
+      steps,
       createdAt: new Date().toISOString(),
       disclaimer:
         "ציון התאמה למודל המחקרי — לא סיכוי זכייה. לכל צירוף חוקי אותה הסתברות בסיסית בהגרלה הוגנת.",

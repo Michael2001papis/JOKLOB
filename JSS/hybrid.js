@@ -20,6 +20,8 @@ JOKLOB.hybrid = {
     const cold = report.classes.cold;
     const shadow = report.shadow;
     const pairs = report.pairs.pairs.slice(0, 40).map((p) => p.key.split("-").map(Number));
+    const pairKeySet = new Set(report.pairs.pairs.slice(0, 40).map((p) => p.key));
+    const tripleKeySet = new Set(report.pairs.triples.slice(0, 30).map((p) => p.key));
     const scoreW = { ...JOKLOB.analyze.scoreWeightsDefault, ...(opts.scoreWeights || {}) };
     if (opts.experimentalMode === "weighted") {
       scoreW.experimental = Math.min(0.1, opts.experimentalWeight ?? 0.08);
@@ -90,7 +92,7 @@ JOKLOB.hybrid = {
         tags[pr[1]] = [...new Set([...(tags[pr[1]] || []), "זוג היסטורי"])];
       }
 
-      const sig = JOKLOB.analyze.shadowSignature(nums);
+      const sig = JOKLOB.analyze.shadowSignature(nums, pairKeySet, tripleKeySet);
       // soft structure preferences — not hard reject except illegal already handled
       if (sig.maxRun >= 4) continue;
 

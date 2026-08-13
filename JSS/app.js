@@ -136,7 +136,10 @@
         }
         const pfile = root.querySelector("#pdf").files?.[0];
         if (pfile) {
-          allErrors.push({ line: 0, errors: ["PDF לא מחולץ אוטומטית. המירו ל-CSV/Excel."] });
+          const buf = await pfile.arrayBuffer();
+          const parsed = JOKLOB.data.parsePdf(buf);
+          incoming = incoming.concat(parsed.rows);
+          allErrors.push(...parsed.errors);
         }
         const box = root.querySelector("#import-errors");
         if (allErrors.length) {
@@ -145,10 +148,14 @@
         if (!incoming.length) return alert("אין שורות תקינות לייבוא");
         const db = JOKLOB.data.load();
         const merged = JOKLOB.data.mergeDraws(replace ? [] : db.draws, incoming, { replace });
+        const ver = (db.version || 1) + 1;
+        merged.draws.forEach((d) => {
+          d.researchVersion = d.researchVersion || ver;
+        });
         const next = {
-          version: (db.version || 1) + 1,
+          version: ver,
           updatedAt: new Date().toISOString(),
-          sourceLabel: `ייבוא משתמש · v${(db.version || 1) + 1} · ${new Date().toLocaleDateString("he-IL")}`,
+          sourceLabel: `ייבוא משתמש · v${ver} · ${new Date().toLocaleDateString("he-IL")}`,
           draws: merged.draws,
           isDemo: false,
         };
@@ -184,6 +191,16 @@
             <pre>${JOKLOB.ui.esc(JSON.stringify(out.summary, null, 2))}</pre>
             <p><b>מסקנה:</b> ${JOKLOB.ui.esc(out.summary.verdict)}</p>
           </div>`;
+      });
+    }
+
+    if (state.route === "r-world") {
+      root.querySelector("#save-world")?.addEventListener("click", () => {
+        JOKLOB.world.saveExtra({
+          volatility: root.querySelector("#world-vol").value,
+          events: root.querySelector("#world-ev").value,
+        });
+        go("r-world");
       });
     }
 

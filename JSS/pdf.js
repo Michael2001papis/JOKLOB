@@ -21,6 +21,8 @@ JOKLOB.pdf = {
         <p>מודל: ${this.esc(t.methodLabel)} · ציון התאמה: ${Number(t.researchScore || 0).toFixed(3)}</p>
         <p>אש: ${t.firePicked?.join(", ") || "-"} · לחץ: ${t.pressurePicked?.join(", ") || "-"}</p>
         <p>חם: ${t.hotPicked?.join(", ") || "-"} · קר: ${t.coldPicked?.join(", ") || "-"}</p>
+        <p>זוגות: ${(t.pairsIncluded || []).join(" · ") || "-"} · רצפים: ${(t.sequencesIncluded || []).join(" · ") || "-"}</p>
+        <p>רכיב אקראי: ${Math.round((t.randomShare || 0) * 100)}%</p>
         <p>סכום ${t.signature?.sum} · זוגי/אי־זוגי ${t.signature?.evenOdd?.join("/") } · טווחים ${t.signature?.bandPattern}</p>
         <p>Seed: ${this.esc(t.seed)} · מזהה: ${this.esc(t.calcId)}</p>
         <p>גרסת מאגר: ${this.esc(t.dataVersion?.source)} (${t.dataVersion?.drawsUsed} הגרלות)</p>

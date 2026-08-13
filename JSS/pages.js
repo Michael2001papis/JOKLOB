@@ -67,6 +67,7 @@ JOKLOB.pages = {
           ["r-overview", "לוח ראשי"],
           ["upload", "העלאת מאגר"],
           ["r-period", "בחירת תקופה"],
+          ["r-freq", "מנוע שכיחויות"],
           ["r-hot", "חמים"],
           ["r-cold", "קרים"],
           ["r-quiet", "שקטים"],
@@ -78,6 +79,7 @@ JOKLOB.pages = {
           ["r-ranges", "פיזור טווחים"],
           ["r-shadow", "צל הגרלה"],
           ["r-strong", "המספר החזק"],
+          ["r-world", "שכבה עולמית"],
           ["home", "מחולל היברידי"],
           ["backtest", "בדיקת עבר"],
           ["r-compare", "השוואת מודלים"],
@@ -122,6 +124,19 @@ JOKLOB.pages = {
     const r = JOKLOB.analyze.classifyNumbers(draws);
     const list = r[key] || [];
     const cmp = r.cmp.enriched.filter((x) => list.includes(x.n));
+    const rows = cmp
+      .map(
+        (x) => `<tr>
+        <td>${x.n}</td><td>${x.count}</td><td>${(x.rate * 100).toFixed(2)}%</td>
+        <td>${x.expected.toFixed(1)}</td><td>${x.deviation.toFixed(1)}</td>
+        <td>${x.rankHistoric}</td><td>${x.rankRecent}</td><td>${x.rankChange}</td>
+        <td>${x.strengthening ? "התחזקות" : x.weakening ? "היחלשות" : "יציב"}</td>
+        <td>${x.since}</td><td>${x.avgGap.toFixed(1)}</td>
+        <td>${x.maxGap}</td><td>${x.minGap}</td>
+        <td>${x.quietPercentile.toFixed(0)}</td>
+      </tr>`
+      )
+      .join("");
     return `
       <button type="button" class="btn secondary" data-go="research">← חזרה</button>
       <h1>מספרים ${title}</h1>
@@ -129,7 +144,49 @@ JOKLOB.pages = {
         <p><span class="chip">חישוב מתמטי</span> מדגם ${r.cmp.sampleSize} · חלון אחרון ${r.cmp.recentSize}</p>
         <p>מחושב כעת: ${JOKLOB.ui.numList(list)}</p>
         <p>צילום 08.08.2026: ${JOKLOB.ui.numList(snap)}</p>
-        <pre>${JOKLOB.ui.esc(JSON.stringify(cmp.slice(0, 12).map((x) => ({ n: x.n, count: x.count, rate: +x.rate.toFixed(4), since: x.since, rankHistoric: x.rankHistoric, rankRecent: x.rankRecent })), null, 2))}</pre>
+        <p class="muted">לא רק “חם/קר” — מוצגים מספר, תקופה, גודל מדגם והפער בפועל.</p>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr>
+            <th>#</th><th>הופעות</th><th>שיעור</th><th>צפוי</th><th>סטייה</th>
+            <th>דירוג היסט.</th><th>אחרון</th><th>שינוי</th><th>מגמה</th>
+            <th>שקט</th><th>פער ממוצע</th><th>ארוך</th><th>קצר</th><th>אחוזון שקט</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table></div>
+      </div>`;
+  },
+
+  "r-freq"() {
+    const { draws } = JOKLOB.generator.getDraws(JOKLOB.storage.get().period || "format37");
+    const cmp = JOKLOB.analyze.compareWindows(draws);
+    const rows = cmp.enriched
+      .slice()
+      .sort((a, b) => a.n - b.n)
+      .map(
+        (x) => `<tr>
+        <td>${x.n}</td><td>${x.count}</td><td>${(x.rate * 100).toFixed(2)}%</td>
+        <td>${x.expected.toFixed(1)}</td><td>${x.deviation.toFixed(1)}</td>
+        <td>${x.rankHistoric}</td><td>${x.rankRecent}</td><td>${x.rankChange}</td>
+        <td>${x.strengthening ? "התחזקות" : x.weakening ? "היחלשות" : "יציב"}</td>
+        <td>${x.since}</td><td>${x.avgGap.toFixed(1)}</td>
+        <td>${x.maxGap}</td><td>${x.minGap}</td><td>${x.quietPercentile.toFixed(0)}</td>
+      </tr>`
+      )
+      .join("");
+    return `
+      <button type="button" class="btn secondary" data-go="research">← חזרה</button>
+      <h1>מנוע שכיחויות</h1>
+      <div class="card">
+        <p><span class="chip">חישוב מתמטי</span> מדגם ${cmp.sampleSize} · חלון אחרון ${cmp.recentSize} · מספרים 1–37 בלבד</p>
+        <p class="muted">מספרים 38–49 אינם מוצגים כקרים — הם לא משתתפים בפורמט הנוכחי.</p>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr>
+            <th>#</th><th>הופעות</th><th>שיעור</th><th>צפוי</th><th>סטייה</th>
+            <th>דירוג היסט.</th><th>אחרון</th><th>שינוי</th><th>מגמה</th>
+            <th>שקט</th><th>פער ממוצע</th><th>ארוך</th><th>קצר</th><th>אחוזון שקט</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table></div>
       </div>`;
   },
 
@@ -151,8 +208,9 @@ JOKLOB.pages = {
         <div class="weight-row"><label>מגמה</label><input type="range" min="0" max="1" step="0.05" id="fw-trend" value="${w.trend}" /></div>
         <div class="weight-row"><label>יציבות</label><input type="range" min="0" max="1" step="0.05" id="fw-stability" value="${w.stability}" /></div>
         <button type="button" class="btn" id="save-fire-w">שמור משקלים וחשב</button>
-        <p>צילום מקורי: ${JOKLOB.ui.numList(JOKLOB.snapshot.fireThen)}</p>
-        <table class="tbl"><thead><tr><th>#</th><th>אש</th><th>אחרון</th><th>היסטורי</th></tr></thead><tbody>${rows}</tbody></table>
+        <p>צילום מקורי (ייחוס בלבד): ${JOKLOB.ui.numList(JOKLOB.snapshot.fireThen)}</p>
+        <p class="muted">הרשימה למטה מחושבת מחדש מהמאגר העדכני. אש = חזק לאחרונה + רקע + מגמה + הופעה ביותר מחלון אחד.</p>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>אש</th><th>אחרון</th><th>היסטורי</th></tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
   },
 
@@ -161,31 +219,51 @@ JOKLOB.pages = {
     const p = JOKLOB.analyze.pressureIndex(draws);
     const rows = p.list
       .slice(0, 15)
-      .map((x) => `<tr><td>${x.n}</td><td>${x.score}</td><td>${x.since}</td><td>${x.quietPercentile.toFixed(0)}</td></tr>`)
+      .map((x) => `<tr><td>${x.n}</td><td>${x.score}</td><td>${x.since}</td><td>${x.quietPercentile.toFixed(0)}</td><td>${(x.histRate * 100).toFixed(2)}%</td><td>${(x.recentRate * 100).toFixed(2)}%</td><td>${x.avgGap.toFixed(1)}</td></tr>`)
       .join("");
     return `
       <button type="button" class="btn secondary" data-go="research">← חזרה</button>
       <h1>מדד לחץ</h1>
       <div class="disclaimer warn-box"><b>אזהרה:</b> ${JOKLOB.ui.esc(p.warning)}</div>
       <div class="card">
-        <p>צילום מקורי: ${JOKLOB.ui.numList(JOKLOB.snapshot.pressureThen)}</p>
-        <table class="tbl"><thead><tr><th>#</th><th>לחץ</th><th>שקט</th><th>אחוזון</th></tr></thead><tbody>${rows}</tbody></table>
+        <p>צילום מקורי (ייחוס בלבד): ${JOKLOB.ui.numList(JOKLOB.snapshot.pressureThen)}</p>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>לחץ</th><th>שקט</th><th>אחוזון</th><th>היסט.</th><th>אחרון</th><th>פער ממוצע</th></tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
   },
 
   "r-pairs"() {
     const { draws } = JOKLOB.generator.getDraws(JOKLOB.storage.get().period || "format37");
     const pt = JOKLOB.analyze.pairsAndTriples(draws);
+    const pairRows = pt.pairs
+      .slice(0, 18)
+      .map(
+        (x) => `<tr><td>${x.key}</td><td>${x.count}</td><td>${x.last || "-"}</td><td>${x.recentCount}</td>
+        <td>${x.expected.toFixed(2)}</td><td>${x.ratio.toFixed(2)}</td><td>${x.rank}</td>
+        <td>${x.stable ? "יציב" : "לא"}</td><td>${x.multipleTestingSuspect ? "חשד" : ""}</td></tr>`
+      )
+      .join("");
+    const tripRows = pt.triples
+      .slice(0, 12)
+      .map(
+        (x) => `<tr><td>${x.key}</td><td>${x.count}</td><td>${x.last || "-"}</td><td>${x.recentCount}</td>
+        <td>${x.expected.toFixed(3)}</td><td>${x.ratio.toFixed(2)}</td><td>${x.rank}</td>
+        <td>${x.stable ? "יציב" : "לא"}</td><td>${x.multipleTestingSuspect ? "חשד" : ""}</td></tr>`
+      )
+      .join("");
     return `
       <button type="button" class="btn secondary" data-go="research">← חזרה</button>
       <h1>זוגות ושלשות</h1>
       <div class="card">
         <p>${JOKLOB.ui.esc(pt.note)}</p>
         <h2>זוגות מובילים (מחושב)</h2>
-        <pre>${JOKLOB.ui.esc(JSON.stringify(pt.pairs.slice(0, 15), null, 2))}</pre>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr>
+          <th>זוג</th><th>הופעות</th><th>אחרון</th><th>חלון אחרון</th><th>צפוי</th><th>יחס</th><th>דירוג</th><th>יציב</th><th>בדיקות מקריות</th>
+        </tr></thead><tbody>${pairRows}</tbody></table></div>
         <h2>שלשות מובילות (מחושב)</h2>
-        <pre>${JOKLOB.ui.esc(JSON.stringify(pt.triples.slice(0, 12), null, 2))}</pre>
-        <h2>צילום מחקר מקורי — זוגות</h2>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr>
+          <th>שלשה</th><th>הופעות</th><th>אחרון</th><th>חלון אחרון</th><th>צפוי</th><th>יחס</th><th>דירוג</th><th>יציב</th><th>בדיקות מקריות</th>
+        </tr></thead><tbody>${tripRows}</tbody></table></div>
+        <h2>צילום מחקר מקורי — זוגות (ייחוס, לא תחזית)</h2>
         <p>${JOKLOB.snapshot.keyPairs.map((p) => p.join("-")).join(" · ")}</p>
         <h2>צילום — שלשות</h2>
         <p>${JOKLOB.snapshot.keyTriples.map((p) => p.join("-")).join(" · ")}</p>
@@ -200,9 +278,10 @@ JOKLOB.pages = {
       <h1>רצפים</h1>
       <div class="card">
         <p>${JOKLOB.ui.esc(s.note)}</p>
-        <p>ללא רצף: ${s.none} · רצף זוגי: ${s.two} · 3+: ${s.threePlus}</p>
-        <pre>${JOKLOB.ui.esc(JSON.stringify(s.top, null, 2))}</pre>
-        <p>צילום: ${JOKLOB.snapshot.keySequences.map((x) => x.join("-")).join(" · ")}</p>
+        <p>ללא רצף: ${s.none} · רצף של שניים: ${s.two} · 3+: ${s.threePlus} · יותר מרצף אחד בשישייה: ${s.multiRun}</p>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>רצף</th><th>הופעות</th></tr></thead>
+        <tbody>${s.top.map((x) => `<tr><td>${x.key}</td><td>${x.count}</td></tr>`).join("")}</tbody></table></div>
+        <p>צילום מחקר (ייחוס): ${JOKLOB.snapshot.keySequences.map((x) => x.join("-")).join(" · ")}</p>
       </div>`;
   },
 
@@ -218,6 +297,7 @@ JOKLOB.pages = {
         <p>אחוזונים: P10=${sh.p10} · P25=${sh.p25} · P75=${sh.p75} · P90=${sh.p90}</p>
         <p>ייחוס מחקר: מרכז ${sh.researchRef.sumCenter}, אזור ${sh.researchRef.sumBand.join("–")}, מבנה ${sh.researchRef.evenOdd.join(":")}</p>
         <p>חלוקת טווחים: 1–10 · 11–20 · 21–30 · 31–37 (7 מספרים בלבד בטווח האחרון)</p>
+        <p>ייחוס פיזור: ${JOKLOB.snapshot.shadowRef.commonSpread.join(" / ")} · רצף קצר אחד אינו חריג.</p>
       </div>`;
   },
 
@@ -229,8 +309,39 @@ JOKLOB.pages = {
       <h1>מנוע המספר החזק</h1>
       <div class="card">
         <p>${JOKLOB.ui.esc(s.note)}</p>
-        <p>צילום: ${s.snapshotStrong.join(", ")}</p>
-        <pre>${JOKLOB.ui.esc(JSON.stringify(s.list, null, 2))}</pre>
+        <p>צילום: ${s.snapshotStrong.join(", ")} — הדירוג הפעיל למטה מחושב מהמאגר העדכני.</p>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr>
+          <th>חזק</th><th>הופעות</th><th>היסט.</th><th>אחרון</th><th>שקט</th><th>מגמה</th><th>יציבות</th><th>אש</th><th>לחץ</th>
+        </tr></thead><tbody>${s.list.map((x) => `<tr>
+          <td>${x.strong}</td><td>${x.count}</td><td>${(x.rate * 100).toFixed(1)}%</td>
+          <td>${(x.recentRate * 100).toFixed(1)}%</td><td>${x.since}</td>
+          <td>${x.trend.toFixed(3)}</td><td>${x.stability.toFixed(2)}</td>
+          <td>${x.fire}</td><td>${x.pressure}</td>
+        </tr>`).join("")}</tbody></table></div>
+      </div>`;
+  },
+
+  "r-world"() {
+    const w = JOKLOB.world.snapshot();
+    const extra = JOKLOB.world.loadExtra();
+    return `
+      <button type="button" class="btn secondary" data-go="research">← חזרה</button>
+      <h1>שכבת הקשר עולמית</h1>
+      <div class="disclaimer"><b>ניסוי / השערה:</b> ${JOKLOB.ui.esc(w.disclaimer)}</div>
+      <div class="card">
+        <p><span class="chip exp">שכבה ניסיונית נפרדת</span> — לא חלק מוכח מהמודל הסטטיסטי.</p>
+        <p>יום בשבוע: <b>${w.weekdayHe}</b> · יום בחודש: <b>${w.dayOfMonth}</b></p>
+        <p>חודש/שנה: <b>${w.month}/${w.year}</b> · שעה: <b>${w.hour}</b></p>
+        <p>מקור: ${JOKLOB.ui.esc(w.source)} · עודכן: ${new Date(w.updatedAt).toLocaleString("he-IL")}</p>
+        <p>שווקים/תנודתיות: ${w.markets.value ?? "—"} · מקור: ${JOKLOB.ui.esc(w.markets.source)}</p>
+        <p>אירועים/סנטימנט: ${w.news.value ?? "—"} · מקור: ${JOKLOB.ui.esc(w.news.source)}</p>
+        <p class="muted">${JOKLOB.ui.esc(w.humanBiasNote)}</p>
+        <label>תנודתיות ידנית (רשות, 0–100)</label>
+        <input id="world-vol" type="number" min="0" max="100" value="${extra.volatility || ""}" />
+        <label>מספר אירועים חריגים ידני (רשות)</label>
+        <input id="world-ev" type="number" min="0" max="50" value="${extra.events || ""}" />
+        <button type="button" class="btn" id="save-world">שמור הזנה ידנית</button>
+        <p class="muted">במחולל: «Seed בלבד» משפיע רק על שחזור. «משקל ניסיוני» עד 10% מהציון.</p>
       </div>`;
   },
 
@@ -248,6 +359,9 @@ JOKLOB.pages = {
         <p>חמים: ${JOKLOB.ui.numList(s.hot)}</p>
         <p>קרים: ${JOKLOB.ui.numList(s.cold)}</p>
         <p>שקטים: ${JOKLOB.ui.numList(s.quiet)}</p>
+        <p>חזקים היסטוריים בולטים: ${JOKLOB.ui.numList(s.strongHistoric)}</p>
+        <p>אש אז: ${JOKLOB.ui.numList(s.fireThen)}</p>
+        <p>לחץ אז: ${JOKLOB.ui.numList(s.pressureThen)}</p>
       </div>`;
   },
 
@@ -383,7 +497,7 @@ JOKLOB.pages = {
         <input type="file" id="xlsx" accept=".xlsx,.xls" />
         <label>PDF</label>
         <input type="file" id="pdf" accept=".pdf" />
-        <p class="muted">PDF: אין חילוץ אוטומטי אמין בדפדפן — המירו ל-CSV/Excel. מסומן כמגבלה שקופה.</p>
+        <p class="muted">PDF: חילוץ חלקי בלבד. אם נכשל — המירו ל-CSV/Excel. שגיאות מוצגות לפני הכנסה למחקר.</p>
         <label>הקלדה ידנית (שורה אחת)</label>
         <input id="manual" dir="ltr" placeholder="1,6,9,16,22,33,7" />
         <div class="actions">

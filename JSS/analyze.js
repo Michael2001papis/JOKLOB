@@ -107,17 +107,20 @@ JOKLOB.analyze = {
       const trend = (rec.rate || 0) - (r.rate || 0);
       const midTrend = (rec.rate || 0) - (m.rate || 0);
       const stability = 1 - Math.min(1, Math.abs(trend) * 20);
+      const rankRecent = recent.byHist.findIndex((x) => x.n === r.n) + 1;
       return {
         ...r,
         recentRate: rec.rate,
         recentCount: rec.count,
         recentSince: rec.since,
-        rankRecent: recent.byHist.findIndex((x) => x.n === r.n) + 1,
+        rankRecent,
+        rankChange: r.rankHistoric - rankRecent,
         trend,
         midTrend,
         stability,
         strengthening: trend > 0.01,
         weakening: trend < -0.01,
+        multiWindow: (rec.count || 0) > 0 && r.count > (rec.count || 0),
       };
     });
 
@@ -133,13 +136,15 @@ JOKLOB.analyze = {
       const historic = Math.min(1, (r.rate || 0) / (this.expectedRate() * 2));
       const trend = Math.max(0, Math.min(1, 0.5 + r.trend * 25));
       const stability = r.stability;
+      const multi = r.multiWindow ? 1 : 0.75;
       const score =
         100 *
-        (w.recent * recent + w.historic * historic + w.trend * trend + w.stability * stability);
+        (w.recent * recent + w.historic * historic + w.trend * trend + w.stability * stability) *
+        (0.92 + 0.08 * multi);
       return {
         n: r.n,
         score: Math.round(score * 10) / 10,
-        parts: { recent, historic, trend, stability },
+        parts: { recent, historic, trend, stability, multiWindow: r.multiWindow },
         meta: r,
       };
     });
@@ -174,7 +179,7 @@ JOKLOB.analyze = {
     };
   },
 
-  pairsAndTriples(draws) {
+  _comboMaps(draws) {
     const pairCount = new Map();
     const tripleCount = new Map();
     const pairLast = new Map();
@@ -185,40 +190,47 @@ JOKLOB.analyze = {
         for (let j = i + 1; j < nums.length; j++) {
           const k = `${nums[i]}-${nums[j]}`;
           pairCount.set(k, (pairCount.get(k) || 0) + 1);
-          pairLast.set(k, d.date || idx);
+          pairLast.set(k, d.date || String(idx));
           for (let t = j + 1; t < nums.length; t++) {
             const tk = `${nums[i]}-${nums[j]}-${nums[t]}`;
             tripleCount.set(tk, (tripleCount.get(tk) || 0) + 1);
-            tripleLast.set(tk, d.date || idx);
+            tripleLast.set(tk, d.date || String(idx));
           }
         }
       }
     });
-    const N = draws.length || 1;
-    // expected rough: C(6,2)/C(37,2) per draw for pairs
-    const expPair = (15 / 666) * N;
-    const expTriple = (20 / 7770) * N;
-    const pairs = [...pairCount.entries()]
-      .map(([k, c]) => ({
-        key: k,
-        count: c,
-        last: pairLast.get(k),
-        expected: expPair,
-        ratio: c / (expPair || 1),
-      }))
-      .sort((a, b) => b.count - a.count);
-    const triples = [...tripleCount.entries()]
-      .map(([k, c]) => ({
-        key: k,
-        count: c,
-        last: tripleLast.get(k),
-        expected: expTriple,
-        ratio: c / (expTriple || 1),
-      }))
-      .sort((a, b) => b.count - a.count);
+    return { pairCount, tripleCount, pairLast, tripleLast, N: draws.length || 1 };
+  },
+
+  pairsAndTriples(draws) {
+    const full = this._comboMaps(draws);
+    const recent = this._comboMaps(this.windowDraws(draws, Math.min(100, draws.length)));
+    const mid = this._comboMaps(this.windowDraws(draws, Math.min(250, draws.length)));
+    const expPair = (15 / 666) * full.N;
+    const expTriple = (20 / 7770) * full.N;
+    const pack = (map, lastMap, recentMap, midMap, expected) =>
+      [...map.entries()]
+        .map(([k, c]) => {
+          const rec = recentMap.get(k) || 0;
+          const md = midMap.get(k) || 0;
+          const ratio = c / (expected || 1);
+          return {
+            key: k,
+            count: c,
+            last: lastMap.get(k),
+            recentCount: rec,
+            midCount: md,
+            expected,
+            ratio,
+            stable: c > 0 && rec > 0 && md > 0,
+            multipleTestingSuspect: c <= 2 && ratio > 3,
+          };
+        })
+        .sort((a, b) => b.count - a.count)
+        .map((row, i) => ({ ...row, rank: i + 1 }));
     return {
-      pairs,
-      triples,
+      pairs: pack(full.pairCount, full.pairLast, recent.pairCount, mid.pairCount, expPair),
+      triples: pack(full.tripleCount, full.tripleLast, recent.tripleCount, mid.tripleCount, expTriple),
       note: "יחס גבוה עשוי לנבוע גם מריבוי בדיקות מקריות. אין קביעה שהקשר יימשך.",
       multipleTestingWarning: true,
     };
@@ -226,7 +238,7 @@ JOKLOB.analyze = {
 
   sequences(draws) {
     const seqCount = new Map();
-    let none = 0, two = 0, threePlus = 0;
+    let none = 0, two = 0, threePlus = 0, multiRun = 0;
     draws.forEach((d) => {
       const nums = [...d.numbers].sort((a, b) => a - b);
       const runs = [];
@@ -242,24 +254,25 @@ JOKLOB.analyze = {
       if (!runs.length) none++;
       else if (runs.some((r) => r.length >= 3)) threePlus++;
       else two++;
+      if (runs.length >= 2) multiRun++;
       runs.forEach((r) => {
-        if (r.length === 2) {
-          const k = `${r[0]}-${r[1]}`;
-          seqCount.set(k, (seqCount.get(k) || 0) + 1);
-        }
+        const k = r.join("-");
+        seqCount.set(k, (seqCount.get(k) || 0) + 1);
       });
     });
-    const top = [...seqCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20);
+    const top = [...seqCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20)
+      .map(([k, c]) => ({ key: k, count: c }));
     return {
       none,
       two,
       threePlus,
+      multiRun,
       top,
       note: "רצף קצר אינו נדיר — אין לפסול אוטומטית שישייה עם רצף.",
     };
   },
 
-  shadowSignature(numbers) {
+  shadowSignature(numbers, pairKeys, tripleKeys) {
     const nums = [...numbers].sort((a, b) => a - b);
     const sum = nums.reduce((a, b) => a + b, 0);
     const mean = sum / 6;
@@ -302,6 +315,34 @@ JOKLOB.analyze = {
       endings[e] = (endings[e] || 0) + 1;
     });
     const repeatedEndings = Object.values(endings).filter((c) => c > 1).length;
+    let historicPairs = 0;
+    let historicTriples = 0;
+    const foundPairs = [];
+    const foundTriples = [];
+    if (pairKeys && pairKeys.size) {
+      for (let i = 0; i < nums.length; i++) {
+        for (let j = i + 1; j < nums.length; j++) {
+          const k = `${nums[i]}-${nums[j]}`;
+          if (pairKeys.has(k)) {
+            historicPairs++;
+            foundPairs.push(k);
+          }
+        }
+      }
+    }
+    if (tripleKeys && tripleKeys.size) {
+      for (let i = 0; i < nums.length; i++) {
+        for (let j = i + 1; j < nums.length; j++) {
+          for (let t = j + 1; t < nums.length; t++) {
+            const k = `${nums[i]}-${nums[j]}-${nums[t]}`;
+            if (tripleKeys.has(k)) {
+              historicTriples++;
+              foundTriples.push(k);
+            }
+          }
+        }
+      }
+    }
     return {
       numbers: nums,
       sum,
@@ -317,6 +358,10 @@ JOKLOB.analyze = {
       maxRun,
       runCount,
       repeatedEndings,
+      historicPairs,
+      historicTriples,
+      foundPairs,
+      foundTriples,
     };
   },
 
@@ -389,14 +434,18 @@ JOKLOB.analyze = {
       const rate = freq[s] / N;
       const recentRate = freqR[s] / (recent.length || 1);
       const since = last[s] < 0 ? N : N - 1 - last[s];
+      const trend = recentRate - rate;
       const fire = 100 * (0.5 * Math.min(1, recentRate * 7) + 0.3 * Math.min(1, rate * 7) + 0.2 * Math.max(0, recentRate - rate + 0.5));
       const pressure = 100 * (0.5 * Math.min(1, since / 20) + 0.5 * Math.min(1, rate * 7));
+      const stability = 1 - Math.min(1, Math.abs(trend) * 8);
       list.push({
         strong: s,
         count: freq[s],
         rate,
         recentRate,
         since,
+        trend,
+        stability,
         fire: Math.round(fire * 10) / 10,
         pressure: Math.round(pressure * 10) / 10,
       });

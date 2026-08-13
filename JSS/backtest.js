@@ -64,19 +64,67 @@ JOKLOB.backtest = {
       return vals.reduce((a, b) => a + b, 0) / (vals.length || 1);
     };
 
+    const meanSd = (fn) => {
+      const vals = results.map(fn);
+      const m = vals.reduce((a, b) => a + b, 0) / (vals.length || 1);
+      const v = vals.reduce((s, x) => s + (x - m) ** 2, 0) / (vals.length || 1);
+      const sd = Math.sqrt(v);
+      const se = sd / Math.sqrt(vals.length || 1);
+      return { mean: m, sd, ciLo: m - 1.96 * se, ciHi: m + 1.96 * se };
+    };
+    const distH = [0, 0, 0, 0, 0, 0, 0];
+    const distR = [0, 0, 0, 0, 0, 0, 0];
+    results.forEach((row) => {
+      row.hybrid.dist.forEach((c, i) => {
+        distH[i] += c;
+      });
+      row.random.dist.forEach((c, i) => {
+        distR[i] += c;
+      });
+    });
+    const mid = Math.floor(results.length / 2) || 1;
+    const first = results.slice(0, mid);
+    const second = results.slice(mid);
+    const avgPart = (arr, fn) => arr.reduce((s, x) => s + fn(x), 0) / (arr.length || 1);
+    const hybridHit = meanSd((x) => x.hybrid.avgHit);
+    const randomHit = meanSd((x) => x.random.avgHit);
     const summary = {
       trials: results.length,
       hybridAvgBest: avg((x) => x.hybrid.best),
       randomAvgBest: avg((x) => x.random.best),
-      hybridAvgHit: avg((x) => x.hybrid.avgHit),
-      randomAvgHit: avg((x) => x.random.avgHit),
+      hybridAvgHit: hybridHit.mean,
+      randomAvgHit: randomHit.mean,
+      hybridHitCI: [hybridHit.ciLo, hybridHit.ciHi],
+      randomHitCI: [randomHit.ciLo, randomHit.ciHi],
       hybridStrongRate: avg((x) => x.hybrid.strongHit / tickets),
       randomStrongRate: avg((x) => x.random.strongHit / tickets),
+      hybridDist0to6: distH,
+      randomDist0to6: distR,
+      stability: {
+        hybridFirst: avgPart(first, (x) => x.hybrid.avgHit),
+        hybridSecond: avgPart(second, (x) => x.hybrid.avgHit),
+        randomFirst: avgPart(first, (x) => x.random.avgHit),
+        randomSecond: avgPart(second, (x) => x.random.avgHit),
+      },
     };
-    summary.beatsRandom = summary.hybridAvgHit > summary.randomAvgHit;
-    summary.verdict = summary.beatsRandom
-      ? "במדגם זה המודל ההיברידי מציג ממוצע התאמות גבוה מעט מהבסיס האקראי — אין זו הוכחת יתרון מובהק להגרלות עתידיות."
-      : "במדגם זה המודל לא עלה על אקראיות בממוצע ההתאמות. מוצג בגלוי — אין לטעון לסיכוי משופר.";
+    const diff = summary.hybridAvgHit - summary.randomAvgHit;
+    summary.beatsRandom = diff > 0;
+    summary.ciExcludesZero =
+      hybridHit.ciLo > randomHit.ciHi || randomHit.ciLo > hybridHit.ciHi;
+    summary.overfitSuspicion = results.length < 15 && Math.abs(diff) > 0.35;
+    if (!summary.beatsRandom) {
+      summary.verdict =
+        "במדגם זה המודל לא עלה על אקראיות בממוצע ההתאמות. מוצג בגלוי — אין לטעון לסיכוי משופר.";
+    } else if (!summary.ciExcludesZero) {
+      summary.verdict =
+        "הממוצע גבוה מעט מהבסיס האקראי, אך טווח הביטחון אינו מפריד מובהק. אין הוכחת יתרון להגרלות עתידיות.";
+    } else {
+      summary.verdict =
+        "במדגם זה יש הפרש מול אקראיות, אך זו סימולציה על העבר בלבד — לא הוכחה לעתיד ואין סיכוי משופר מובטח.";
+    }
+    if (summary.overfitSuspicion) {
+      summary.verdict += " חשד להתאמת יתר: מדגם קטן והפרש גדול.";
+    }
 
     return {
       kind: "בדיקת עבר (walk-forward)",

@@ -127,6 +127,7 @@ JOKLOB.data = {
         strong,
         source: "csv",
         uploadedAt: new Date().toISOString(),
+        researchVersion: null,
       };
       row.format = this.detectFormat(row.numbers);
       const v = this.validateDraw(row);
@@ -134,6 +135,35 @@ JOKLOB.data = {
       else rows.push(row);
     });
     return { rows, errors };
+  },
+
+  parsePdf(arrayBuffer) {
+    const bytes = new Uint8Array(arrayBuffer);
+    let raw = "";
+    for (let i = 0; i < bytes.length; i++) {
+      const c = bytes[i];
+      raw += c >= 32 && c < 127 ? String.fromCharCode(c) : c === 10 || c === 13 ? "\n" : " ";
+    }
+    const lines = [];
+    raw.split(/\n+/).forEach((line) => {
+      const nums = line.match(/\d+/g);
+      if (nums && nums.length >= 7) lines.push(nums.join(","));
+    });
+    if (!lines.length) {
+      return {
+        rows: [],
+        errors: [{ line: 0, errors: ["PDF: לא נמצאו שורות מספרים לחילוץ. המירו ל-CSV/Excel לייבוא אמין."] }],
+      };
+    }
+    const parsed = this.parseCsv(lines.join("\n"));
+    parsed.rows.forEach((r) => {
+      r.source = "pdf";
+    });
+    parsed.errors.unshift({
+      line: 0,
+      errors: ["PDF: חילוץ חלקי בלבד. בדקו את השורות לפני אישור. עדיף CSV/Excel."],
+    });
+    return parsed;
   },
 
   parseExcel(arrayBuffer) {
@@ -160,6 +190,7 @@ JOKLOB.data = {
         continue;
       }
       seen.add(k);
+      d.researchVersion = (d.researchVersion || null);
       base.push(d);
       added.push(d);
     }

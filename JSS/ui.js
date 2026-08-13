@@ -53,16 +53,20 @@ JOKLOB.ui = {
           אש: <b>${(t.firePicked || []).join(", ") || "-"}</b> ·
           לחץ: <b>${(t.pressurePicked || []).join(", ") || "-"}</b><br>
           חם: ${(t.hotPicked || []).join(", ") || "-"} · קר: ${(t.coldPicked || []).join(", ") || "-"}<br>
+          זוגות שנכללו: ${(t.pairsIncluded || []).join(" · ") || "-"} ·
+          רצפים: ${(t.sequencesIncluded || []).join(" · ") || "-"}<br>
           סכום ${t.signature?.sum} · זוגי/אי־זוגי ${t.signature?.evenOdd?.join(":")} ·
           טווחים ${t.signature?.bandPattern}<br>
+          רכיב אקראי בציון: ${Math.round((t.randomShare || 0) * 100)}%<br>
           גרסת מאגר: ${this.esc(t.dataVersion?.source)} · ${t.dataVersion?.drawsUsed} הגרלות<br>
           Seed: <span dir="ltr">${this.esc(t.seed)}</span><br>
           מזהה: <span dir="ltr">${this.esc(t.calcId)}</span>
         </div>
         <details>
           <summary>למה נבחר כל מספר? / שלבי ציון</summary>
+          <ol>${(t.steps || []).map((s) => `<li>${this.esc(s)}</li>`).join("")}</ol>
           <ul>${why}</ul>
-          <p><b>תרומת רכיבים:</b> ${this.esc(parts)}</p>
+          <p><b>תרומת רכיבים לציון התאמה למודל המחקרי:</b> ${this.esc(parts)}</p>
           <pre>${this.esc(JSON.stringify(t.scoreWeights || {}, null, 2))}</pre>
           <p class="warn">${this.esc(t.disclaimer)}</p>
           <p class="muted">© 2026 JOKLOB / מיכאל · כל הזכויות שמורות</p>
