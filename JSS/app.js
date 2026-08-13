@@ -17,7 +17,7 @@
     if (!el) return;
     const db = JOKLOB.data.load();
     const short = window.matchMedia("(max-width: 599px)").matches
-      ? `${db.isOfficial ? "רשמי" : "מאגר"} · ${(db.draws || []).length}`
+      ? `${db.isOfficial ? "רשמי" : "מאגר"} ${(db.draws || []).length}`
       : JOKLOB.ui.archiveShort(db);
     el.textContent = short;
     el.title = db.sourceLabel || "";

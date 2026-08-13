@@ -38,7 +38,7 @@ JOKLOB.charts = {
           <div class="col-l">${this.esc(x[labelKey])}</div></div>`;
       })
       .join("");
-    return `<div class="chart-card"><div class="chart-title">${this.esc(title)}</div>
+    return `<div class="chart-card col-chart-card desktop-only"><div class="chart-title">${this.esc(title)}</div>
       <div class="col-chart">${cols}</div></div>`;
   },
 };

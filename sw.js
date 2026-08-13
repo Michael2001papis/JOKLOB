@@ -4,7 +4,7 @@
  * כל הזכויות שמורות. אין להעתיק, לשכפל, להפיץ או להשתמש בקוד זה ללא רשות מפורשת בכתב.
  */
 
-const CACHE = "joklob-research-v3";
+const CACHE = "joklob-research-v4";
 const ASSETS = [
   "/",
   "/index.html",
@@ -22,6 +22,8 @@ const ASSETS = [
   "/JSS/generator.js",
   "/JSS/storage.js",
   "/JSS/pdf.js",
+  "/JSS/nav.js",
+  "/JSS/charts.js",
   "/JSS/ui.js",
   "/JSS/pages.js",
   "/JSS/app.js",

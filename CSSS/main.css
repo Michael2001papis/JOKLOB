@@ -46,7 +46,9 @@ body {
   font-family: var(--font);
   color: var(--text);
   background: var(--bg);
+  overflow-x: hidden;
 }
+.shell, .main-col, .content, .card { min-width: 0; max-width: 100%; }
 button, input, textarea, select { font-family: inherit; font-size: 16px; }
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
   outline: 2px solid var(--accent);
@@ -68,7 +70,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   z-index: 15;
   background: var(--bg);
   padding: 6px 0;
+  min-width: 0;
 }
+.top-actions { display: flex; align-items: center; gap: 6px; margin-inline-start: auto; flex-shrink: 0; }
 .brand { font-weight: 800; letter-spacing: .08em; color: var(--accent); font-size: 14px; flex-shrink: 0; }
 .screen-title { font-weight: 700; font-size: 15px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chip-btn {
@@ -320,7 +324,46 @@ summary { cursor: pointer; color: var(--accent); min-height: 44px; display: flex
 .welcome-steps li { margin: 4px 0; }
 
 @media (max-width: 599px) {
+  :root { --pad: 14px; --nav: 64px; }
+  .app { padding: 8px 14px calc(var(--nav) + var(--safe-bottom) + 16px); overflow-x: hidden; }
+  .screen-title { display: none; }
+  .chip-btn { max-width: 92px; min-height: 40px; padding: 0 8px; font-size: 12px; }
+  .icon-btn { width: 40px; height: 40px; min-width: 40px; }
+  .brand { font-size: 13px; }
+  h1 { font-size: 1.25rem; margin: 0 0 8px; }
+  h2 { font-size: 1rem; margin: 12px 0 8px; }
+  label { margin: 8px 0 4px; }
+  .card { padding: 12px; margin: 0 0 12px; }
+  .disclaimer { font-size: 13px; padding: 10px 12px; margin: 0 0 12px; }
+  .btn.big { min-height: 52px; margin: 12px 0 8px; font-size: 1.05rem; }
+  .actions { grid-template-columns: 1fr; }
+  .actions.three { grid-template-columns: 1fr 1fr; }
+  .actions.three .menu { grid-column: 1 / -1; }
+  [data-go-back] { width: auto; min-width: 108px; margin: 0 0 10px; }
+  .tile { min-width: 0; min-height: 56px; padding: 10px; gap: 8px; }
+  .tile .hint { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile span { min-width: 0; overflow: hidden; }
+  .tile .chev { flex-shrink: 0; }
+  .balls { gap: 3px; margin: 10px 0; flex-wrap: nowrap; }
+  .ball {
+    width: clamp(32px, 10.2vw, 40px);
+    height: clamp(32px, 10.2vw, 40px);
+    font-size: .85rem;
+    flex-shrink: 0;
+  }
+  .nav-btn { font-size: 11px; padding: 0 1px; }
+  .page-footer { margin-top: 16px; font-size: 12px; }
+  .col-chart, .col-chart-card { display: none; }
   .desktop-table { display: none !important; }
+  .toolbar { flex-direction: column; }
+  .toolbar input, .toolbar select { min-width: 0; width: 100%; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .stat b { overflow-wrap: anywhere; word-break: break-word; font-size: 1rem; }
+  .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tab { flex: 1; padding: 0 8px; font-size: 13px; }
+  .chip { max-width: 100%; word-break: break-word; }
+  .welcome-steps { display: none; }
+  .drop { padding: 16px 10px; min-height: 72px; }
 }
 @media (min-width: 600px) {
   :root { --app-max: 960px; --pad: 20px; }
@@ -329,6 +372,8 @@ summary { cursor: pointer; color: var(--accent); min-height: 44px; display: flex
   .balls { gap: 10px; }
   .ball { width: 52px; height: 52px; font-size: 1.15rem; }
   .mobile-cards { display: none; }
+  .mobile-only { display: none; }
+  .desktop-only { display: block; }
   .desktop-table { display: block; }
   .stat-grid { grid-template-columns: repeat(3, 1fr); }
   .chip-btn { max-width: none; font-size: 13px; }

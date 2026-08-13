@@ -81,12 +81,12 @@ JOKLOB.pages = {
       : "";
     return `
       <h1>מחולל מחקרי</h1>
-      <p class="engine-title">מנוע המחקר של מיכאל</p>
+      <p class="engine-title desktop-only">מנוע המחקר של מיכאל</p>
       ${welcome}
-      <div class="card">
+      <div class="card desktop-only">
         <p style="margin:0"><b>${JOKLOB.ui.esc(JOKLOB.ui.archiveShort(db))}</b></p>
       </div>
-      <div class="disclaimer"><b>גילוי נאות:</b> ציון התאמה למודל ≠ סיכוי זכייה. אין מספר בטוח ואין זכייה מובטחת.</div>
+      <div class="disclaimer"><b>גילוי נאות:</b> ציון התאמה ≠ סיכוי זכייה.</div>
       <div class="card" id="gen-form">
         <label>סוג</label>
         <div class="seg" id="mode-seg">
@@ -185,7 +185,11 @@ JOKLOB.pages = {
     const { draws } = this._draws();
     const cmp = JOKLOB.analyze.compareWindows(draws);
     const rows = cmp.enriched.slice().sort((a, b) => a.n - b.n).map(freqRow);
-    const chart = JOKLOB.charts.cols(
+    const top = cmp.enriched.slice().sort((a, b) => b.count - a.count).slice(0, 10);
+    const chart = JOKLOB.charts.bars(
+      top.map((x) => ({ l: x.n, v: x.count })),
+      { title: "10 השכיחים במדגם" }
+    ) + JOKLOB.charts.cols(
       rows.map((x) => ({ l: x.n, v: x.count })),
       { title: "שכיחויות 1–37 (לא תחזית)" }
     );
