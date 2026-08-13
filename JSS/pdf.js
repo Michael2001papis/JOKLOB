@@ -12,7 +12,10 @@ JOKLOB.pdf = {
   },
   exportBatch(batch) {
     const w = window.open("", "_blank");
-    if (!w) return alert("אפשרו חלונות קופצים");
+    if (!w) {
+      JOKLOB.ui?.toast?.("אפשרו חלונות קופצים לייצוא PDF", "bad");
+      return;
+    }
     const rows = (batch.tickets || [])
       .map(
         (t) => `<div class="t">

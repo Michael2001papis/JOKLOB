@@ -1,3 +1,7 @@
 .vercel/
 .DS_Store
 Thumbs.db
+SCREENSHOTS/node_modules/
+SCREENSHOTS/package.json
+SCREENSHOTS/package-lock.json
+SCREENSHOTS/_verify.mjs

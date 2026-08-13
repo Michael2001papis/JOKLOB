@@ -31,7 +31,19 @@ JOKLOB.storage = {
   setLast(batch) {
     const d = this.get();
     d.last = batch;
-    d.history.unshift({ at: batch.createdAt, seed: batch.seed, method: batch.method, n: batch.tickets.length });
+    const t0 = batch.tickets?.[0];
+    d.history.unshift({
+      at: batch.createdAt,
+      seed: batch.seed,
+      method: batch.method,
+      methodLabel: t0?.methodLabel,
+      n: batch.tickets.length,
+      numbers: t0?.numbers,
+      strong: t0?.strong,
+      researchScore: t0?.researchScore,
+      dataVersion: t0?.dataVersion,
+      calcId: t0?.calcId,
+    });
     d.history = d.history.slice(0, 50);
     this.save(d);
   },

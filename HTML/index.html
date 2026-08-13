@@ -7,7 +7,7 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#070b16" />
   <meta name="description" content="JOKLOB Research Engine — מנוע המחקר של מיכאל" />
   <meta name="author" content="מיכאל / JOKLOB" />
@@ -22,24 +22,37 @@
 <body>
   <div id="app" class="app">
     <header class="topbar">
-      <div class="brand">JOKLOB RESEARCH</div>
-      <div id="screen-title" class="muted"></div>
-      <button type="button" class="about-link" data-route-about>אודות</button>
+      <div class="brand">JOKLOB</div>
+      <div id="screen-title" class="screen-title">מחולל</div>
+      <button type="button" class="chip-btn" id="archive-chip" aria-label="מצב המאגר">מאגר</button>
+      <button type="button" class="icon-btn" id="theme-toggle" aria-label="מצב כהה או בהיר"></button>
+      <button type="button" class="icon-btn" id="help-btn" aria-label="עזרה"></button>
     </header>
-    <main id="content" class="content"></main>
-    <footer class="science-footer">
-      הנתונים עוזרים להבין את העבר — הם אינם מבטיחים את העתיד.<br>
-      <span class="copy-line">© 2026 JOKLOB / מיכאל · כל הזכויות שמורות</span>
-    </footer>
-    <nav class="nav" aria-label="ניווט">
-      <button type="button" data-route="home" class="nav-btn active"><span class="nav-ico" aria-hidden="true">✦</span>מחולל</button>
-      <button type="button" data-route="research" class="nav-btn"><span class="nav-ico" aria-hidden="true">▦</span>מחקר</button>
-      <button type="button" data-route="upload" class="nav-btn"><span class="nav-ico" aria-hidden="true">▤</span>מאגר</button>
-      <button type="button" data-route="backtest" class="nav-btn"><span class="nav-ico" aria-hidden="true">✓</span>בדיקה</button>
-      <button type="button" data-route="more" class="nav-btn"><span class="nav-ico" aria-hidden="true">···</span>עוד</button>
-    </nav>
+    <div class="shell">
+      <aside class="sidebar" id="sidebar" aria-label="תפריט צד"></aside>
+      <div class="main-col">
+        <nav class="crumbs" id="crumbs" aria-label="פירורי לחם"></nav>
+        <main id="content" class="content"></main>
+        <footer class="page-footer">
+          הנתונים עוזרים להבין את העבר — הם אינם מבטיחים את העתיד.<br>
+          <span class="copy-line">© 2026 JOKLOB / מיכאל · כל הזכויות שמורות</span>
+        </footer>
+      </div>
+    </div>
+    <nav class="nav" aria-label="ניווט"></nav>
   </div>
-  <span class="copyright-src" aria-hidden="true">Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved. כל הזכויות שמורות.</span>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <h2 id="modal-title">אישור</h2>
+      <p id="modal-text"></p>
+      <div class="actions">
+        <button type="button" class="btn" id="modal-ok">אישור</button>
+        <button type="button" class="btn secondary" id="modal-cancel">ביטול</button>
+      </div>
+    </div>
+  </div>
+  <span class="visually-hidden" aria-hidden="true">Copyright (c) 2026 JOKLOB / מיכאל. All rights reserved. כל הזכויות שמורות.</span>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="/JSS/rng.js"></script>
@@ -52,6 +65,8 @@
   <script src="/JSS/generator.js"></script>
   <script src="/JSS/storage.js"></script>
   <script src="/JSS/pdf.js"></script>
+  <script src="/JSS/nav.js"></script>
+  <script src="/JSS/charts.js"></script>
   <script src="/JSS/ui.js"></script>
   <script src="/JSS/pages.js"></script>
   <script src="/JSS/app.js"></script>
