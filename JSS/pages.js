@@ -99,7 +99,8 @@ JOKLOB.pages = {
       <button type="button" class="btn secondary" data-go="research">← חזרה</button>
       <h1>לוח מחקר ראשי</h1>
       <div class="card">
-        <p>גודל מדגם פעיל: <b>${r.sampleSize}</b> · סוג: <span class="chip">חישוב מתמטי</span></p>
+        <p>מקור: <b>${JOKLOB.ui.esc(JOKLOB.data.load().sourceLabel || "—")}</b></p>
+        <p>גודל מדגם פעיל (לפי התקופה שנבחרה): <b>${r.sampleSize}</b> · סוג: <span class="chip">חישוב מתמטי</span></p>
         <p>ממוצע סכום מחושב: <b>${r.shadow.mean.toFixed(1)}</b> · חציון: <b>${r.shadow.median}</b></p>
         <p>טווח אמצעי (P25–P75): <b>${r.shadow.p25}–${r.shadow.p75}</b></p>
         <p>ייחוס מחקר מקורי: סכום ~${JOKLOB.snapshot.shadowRef.sumCenter}, אזור ${JOKLOB.snapshot.shadowRef.sumBand.join("–")}</p>
@@ -490,8 +491,11 @@ JOKLOB.pages = {
       <div class="card">
         <p>גרסה פעילה: <b>${JOKLOB.ui.esc(db.sourceLabel || "—")}</b></p>
         <p>הגרלות במאגר: <b>${db.draws.length}</b> · עודכן: ${db.updatedAt ? new Date(db.updatedAt).toLocaleString("he-IL") : "—"}</p>
+        ${db.isOfficial ? `<div class="disclaimer"><b>מאגר רשמי פעיל:</b> כל החישובים (אש, לחץ, שכיחות, צל, היברידי, Backtesting) רצים על file/Lotto.csv.</div>` : ""}
+        ${db.loadingOfficial ? `<div class="disclaimer">טוען את הקובץ הרשמי…</div>` : ""}
         ${db.isDemo ? `<div class="disclaimer">מוצג מאגר הדגמה סינתטי. העלו CSV/Excel אמיתי למחקר.</div>` : ""}
-        <label>CSV / טקסט (draw,date,n1..n6,strong או n1..n6,strong)</label>
+        <button type="button" class="btn" id="reload-official">טען / רענן מ-file/Lotto.csv</button>
+        <label>CSV / טקסט (גם פורמט ישראלי: הגרלה,תאריך DD/MM/YYYY,1-6,חזק)</label>
         <textarea id="csv" dir="ltr"></textarea>
         <label>Excel (.xlsx)</label>
         <input type="file" id="xlsx" accept=".xlsx,.xls" />
@@ -504,7 +508,7 @@ JOKLOB.pages = {
           <button type="button" class="btn" id="import-merge">ייבוא והמשך מאגר</button>
           <button type="button" class="btn secondary" id="import-replace">ייבוא והחלפה</button>
         </div>
-        <button type="button" class="btn danger" id="reset-demo">איפוס להדגמה</button>
+        <button type="button" class="btn danger" id="reset-demo">טען מחדש את המאגר הרשמי (Lotto.csv)</button>
         <div id="import-errors"></div>
       </div>`;
   },
@@ -557,7 +561,7 @@ JOKLOB.pages = {
       <div class="card">
         <h2>מה עליך לעשות עכשיו (3 צעדים)</h2>
         <ol class="guide-ol">
-          <li><b>העלו מאגר אמיתי.</b> לחצו למטה על «מאגר» בסרגל, או על הכפתור כאן. בלי קובץ שלכם מוצג מאגר הדגמה בלבד — לא הגרלות רשמיות.</li>
+          <li><b>המאגר הרשמי כבר בפנים.</b> האתר טוען אוטומטית את <b>file/Lotto.csv</b> (אלפי הגרלות אמיתיות). כל החישובים רצים עליו. אפשר לרענן במסך «מאגר».</li>
           <li><b>בחרו תקופה.</b> ברירת המחדל היא פורמט 6 מתוך 37. אל תערבבו עם תקופות ישנות עד 49 כשיוצרים צירוף חדש.</li>
           <li><b>צרו צירוף.</b> בסרגל «מחולל» בחרו «המודל ההיברידי של מיכאל» ולחצו «צור מספרים». אחר כך אפשר לשמור, לייצא PDF, או לפתוח «למה נבחר כל מספר?».</li>
         </ol>
@@ -580,7 +584,7 @@ JOKLOB.pages = {
         <ul>
           <li><b>מחולל</b> — יצירת צירופים (המסך הראשי).</li>
           <li><b>מחקר</b> — לוח עם כל מסכי הניתוח (חמים, אש, לחץ, זוגות, צל הגרלה וכו').</li>
-          <li><b>מאגר</b> — העלאת CSV / Excel / הקלדה ידנית, או איפוס להדגמה.</li>
+          <li><b>מאגר</b> — המאגר הרשמי file/Lotto.csv נטען אוטומטית. אפשר גם להוסיף CSV/Excel או לרענן את הקובץ.</li>
           <li><b>בדיקה</b> — Backtesting: האם המודל עולה על אקראיות בעבר.</li>
           <li><b>עוד</b> — ערכת נושא, שמירות, מחיקת נתונים, זכויות יוצרים, וקישור למדריך הזה.</li>
         </ul>
@@ -605,7 +609,7 @@ JOKLOB.pages = {
         <p><b>לפני הכנסה</b> המערכת בודקת: בדיוק 6 מספרים, בלי כפילות, טווח נכון, חזק 1–7, הגרלות כפולות, שדות חסרים. שגיאות מוצגות ולא נכנסות למחקר.</p>
         <p><b>ייבוא והמשך מאגר</b> — מוסיף לקובץ הקיים (כפולים מדלגים).<br>
         <b>ייבוא והחלפה</b> — מוחק את המאגר הישן ושמים את החדש.<br>
-        <b>איפוס להדגמה</b> — חוזר למאגר סינתטי (~400 הגרלות) לתרגול בלבד.</p>
+        <b>טען מחדש את המאגר הרשמי</b> — טוען שוב את file/Lotto.csv וכל החישובים מתעדכנים.</p>
         <p>הנתונים נשמרים <b>רק במכשיר שלכם</b> (localStorage). לא נשלחים לשרת.</p>
         <button type="button" class="btn" data-go="upload">פתח מאגר</button>
       </details>

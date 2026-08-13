@@ -4,7 +4,7 @@
  * כל הזכויות שמורות. אין להעתיק, לשכפל, להפיץ או להשתמש בקוד זה ללא רשות מפורשת בכתב.
  */
 
-const CACHE = "joklob-research-v2";
+const CACHE = "joklob-research-v3";
 const ASSETS = [
   "/",
   "/index.html",
@@ -29,6 +29,7 @@ const ASSETS = [
   "/COPYRIGHT.txt",
   "/humans.txt",
   "/robots.txt",
+  "/file/Lotto.csv",
 ];
 
 self.addEventListener("install", (e) => {

@@ -155,9 +155,12 @@
         const next = {
           version: ver,
           updatedAt: new Date().toISOString(),
-          sourceLabel: `ייבוא משתמש · v${ver} · ${new Date().toLocaleDateString("he-IL")}`,
+          sourceLabel: `ייבוא משתמש על בסיס Lotto.csv · v${ver} · ${new Date().toLocaleDateString("he-IL")}`,
+          sourceId: JOKLOB.data.OFFICIAL_ID,
           draws: merged.draws,
           isDemo: false,
+          isOfficial: true,
+          userUpload: true,
         };
         JOKLOB.data.save(next);
         alert(`נוספו ${merged.added}, כפולים שדולגו ${merged.duplicates}. סה״כ ${merged.draws.length}`);
@@ -165,15 +168,22 @@
       };
       root.querySelector("#import-merge")?.addEventListener("click", () => doImport(false));
       root.querySelector("#import-replace")?.addEventListener("click", () => doImport(true));
-      root.querySelector("#reset-demo")?.addEventListener("click", () => {
-        JOKLOB.data.save({
-          version: 1,
-          updatedAt: new Date().toISOString(),
-          sourceLabel: "מאגר הדגמה סינתטי 6/37",
-          draws: JOKLOB.data.makeDemoFormat37(400),
-          isDemo: true,
-        });
-        go("upload");
+      root.querySelector("#reset-demo")?.addEventListener("click", async () => {
+        try {
+          await JOKLOB.data.ensureOfficial(true);
+          go("upload");
+        } catch (err) {
+          alert("טעינת המאגר הרשמי נכשלה: " + err.message);
+        }
+      });
+      root.querySelector("#reload-official")?.addEventListener("click", async () => {
+        try {
+          const out = await JOKLOB.data.ensureOfficial(true);
+          alert(`נטען מאגר רשמי: ${out.db.draws.length} הגרלות`);
+          go("upload");
+        } catch (err) {
+          alert("טעינת המאגר הרשמי נכשלה: " + err.message);
+        }
       });
     }
 
@@ -295,7 +305,7 @@
     }
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     document.documentElement.dataset.theme = localStorage.getItem("joklob_theme") || "dark";
     document.querySelectorAll(".nav-btn").forEach((b) => b.addEventListener("click", () => go(b.dataset.route)));
     document.querySelector("[data-route-about]")?.addEventListener("click", () => go("about"));
@@ -304,6 +314,12 @@
     const hash = (location.hash || "").slice(1);
     if (first && (!hash || hash === "home")) go("about", true);
     else go(hash || "home", false);
+    try {
+      const out = await JOKLOB.data.ensureOfficial(false);
+      if (out.changed) go(state.route, false);
+    } catch (err) {
+      console.warn("official archive", err);
+    }
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
   });
 })();

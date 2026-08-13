@@ -7,9 +7,11 @@
 window.JOKLOB = window.JOKLOB || {};
 
 JOKLOB.data = {
-  KEY: "joklob_research_db_v1",
+  KEY: "joklob_research_db_v2",
   FORMAT_37: "6/37+strong7",
   FORMAT_49: "legacy_to_49",
+  OFFICIAL_URL: "/file/Lotto.csv",
+  OFFICIAL_ID: "file-lotto-csv",
 
   emptyDb() {
     return {
@@ -23,15 +25,18 @@ JOKLOB.data = {
   load() {
     try {
       const raw = localStorage.getItem(this.KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const db = JSON.parse(raw);
+        if (db && Array.isArray(db.draws) && db.draws.length) return db;
+      }
     } catch (_) {}
-    const demo = this.makeDemoFormat37(400);
     return {
-      version: 1,
-      updatedAt: new Date().toISOString(),
-      sourceLabel: "מאגר הדגמה סינתטי 6/37 (לא נתוני הגרלה רשמיים)",
-      draws: demo,
-      isDemo: true,
+      version: 0,
+      updatedAt: null,
+      sourceLabel: "טוען מאגר רשמי מ-file/Lotto.csv…",
+      draws: [],
+      isDemo: false,
+      loadingOfficial: true,
     };
   },
 
@@ -59,11 +64,33 @@ JOKLOB.data = {
     return out;
   },
 
-  detectFormat(numbers) {
-    const max = Math.max(...numbers);
-    if (max <= 37) return this.FORMAT_37;
-    if (max <= 49) return this.FORMAT_49;
-    return "unknown";
+  detectFormat(numbers, strong) {
+    const nums = (numbers || []).map(Number);
+    const max = Math.max(...nums, 0);
+    const s = Number(strong);
+    if (max > 37 && max <= 49) return this.FORMAT_49;
+    if (max > 49) return "unknown";
+    if (Number.isInteger(s) && s >= 1 && s <= 7) return this.FORMAT_37;
+    return this.FORMAT_49;
+  },
+
+  parseDate(raw) {
+    const s = String(raw || "").trim();
+    if (!s) return null;
+    let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+    m = s.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})$/);
+    if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+    m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+    return null;
+  },
+
+  splitCsvLine(line) {
+    return String(line)
+      .split(",")
+      .map((x) => x.trim())
+      .filter((x, i, arr) => x !== "" || i < arr.length - 1);
   },
 
   validateDraw(row) {
@@ -71,7 +98,7 @@ JOKLOB.data = {
     const nums = (row.numbers || []).map(Number);
     if (nums.length !== 6) errors.push("חייבים בדיוק 6 מספרים ראשיים");
     if (new Set(nums).size !== nums.length) errors.push("מספר כפול באותה הגרלה");
-    const fmt = row.format || this.detectFormat(nums);
+    const fmt = row.format || this.detectFormat(nums, row.strong);
     const maxAllowed = fmt === this.FORMAT_49 ? 49 : 37;
     nums.forEach((n) => {
       if (!Number.isInteger(n) || n < 1 || n > maxAllowed) {
@@ -92,49 +119,111 @@ JOKLOB.data = {
     const rows = [];
     const errors = [];
     String(text).split(/\r?\n/).forEach((line, idx) => {
-      const t = line.trim();
+      const t = line.trim().replace(/,+$/, "");
       if (!t || t.startsWith("#")) return;
+      if (/הגרלה|תאריך|חזק/.test(t) && !/^\d/.test(t)) return;
       if (/[a-zA-Zא-ת]/.test(t) && !/\d/.test(t)) return;
-      const parts = t.split(/[\s,;|\t]+/).map((x) => x.trim()).filter(Boolean);
-      // formats: draw,date,n1..n6,strong  OR  n1..n6,strong  OR date,n1..n6,strong
-      let drawNumber = null, date = null, nums = [], strong = null;
-      const numsOnly = parts.map(Number).filter((x) => Number.isFinite(x));
-      if (parts[0] && parts[0].includes("-")) {
-        date = parts[0];
-        nums = parts.slice(1, 7).map(Number);
-        strong = Number(parts[7]);
-      } else if (numsOnly.length >= 8) {
-        drawNumber = numsOnly[0];
-        // if second looks like date-less, treat as draw,n1..n6,strong
-        nums = numsOnly.slice(1, 7);
-        strong = numsOnly[7];
-        if (parts[1] && String(parts[1]).includes("-")) {
-          date = parts[1];
-          nums = parts.slice(2, 8).map(Number);
-          strong = Number(parts[8]);
-        }
-      } else if (numsOnly.length >= 7) {
-        nums = numsOnly.slice(0, 6);
-        strong = numsOnly[6];
+
+      const cells = this.splitCsvLine(t);
+      let drawNumber = null;
+      let date = null;
+      let nums = [];
+      let strong = null;
+      let winnersLotto = null;
+      let winnersDouble = null;
+
+      const dateIdx = cells.findIndex((c) => this.parseDate(c));
+      if (dateIdx >= 0) {
+        date = this.parseDate(cells[dateIdx]);
+        const before = cells.slice(0, dateIdx).map(Number).filter(Number.isFinite);
+        if (before.length) drawNumber = before[0];
+        const after = cells.slice(dateIdx + 1).map((c) => Number(String(c).replace(/^0+(?=\d)/, "")));
+        const afterNums = after.filter(Number.isFinite);
+        nums = afterNums.slice(0, 6);
+        strong = afterNums.length > 6 ? afterNums[6] : null;
+        winnersLotto = afterNums.length > 7 ? afterNums[7] : null;
+        winnersDouble = afterNums.length > 8 ? afterNums[8] : null;
       } else {
-        errors.push({ line: idx + 1, errors: ["לא מספיק שדות"] });
-        return;
+        const parts = t.split(/[\s,;|\t]+/).map((x) => x.trim()).filter(Boolean);
+        const numsOnly = parts.map(Number).filter((x) => Number.isFinite(x));
+        if (numsOnly.length >= 8) {
+          drawNumber = numsOnly[0];
+          nums = numsOnly.slice(1, 7);
+          strong = numsOnly[7];
+        } else if (numsOnly.length >= 7) {
+          nums = numsOnly.slice(0, 6);
+          strong = numsOnly[6];
+        } else {
+          errors.push({ line: idx + 1, errors: ["לא מספיק שדות"] });
+          return;
+        }
       }
+
       const row = {
         drawNumber: drawNumber ?? idx + 1,
         date: date || null,
         numbers: nums.map(Number).sort((a, b) => a - b),
         strong,
+        winnersLotto,
+        winnersDouble,
         source: "csv",
         uploadedAt: new Date().toISOString(),
         researchVersion: null,
       };
-      row.format = this.detectFormat(row.numbers);
+      row.format = this.detectFormat(row.numbers, row.strong);
       const v = this.validateDraw(row);
       if (!v.ok) errors.push({ line: idx + 1, errors: v.errors, row });
       else rows.push(row);
     });
     return { rows, errors };
+  },
+
+  async fetchOfficialText() {
+    const res = await fetch(this.OFFICIAL_URL, { cache: "no-cache" });
+    if (!res.ok) throw new Error("לא ניתן לטעון file/Lotto.csv");
+    const buf = await res.arrayBuffer();
+    let text = new TextDecoder("utf-8").decode(buf);
+    if (!/\d{3,},\d{1,2}\/\d{1,2}\/\d{4}/.test(text) && !text.includes("3954")) {
+      try {
+        text = new TextDecoder("windows-1255").decode(buf);
+      } catch (_) {}
+    }
+    return text;
+  },
+
+  buildOfficialDb(parsed) {
+    const fmt37 = parsed.rows.filter((d) => d.format === this.FORMAT_37).length;
+    const last = [...parsed.rows].sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+    parsed.rows.forEach((d) => {
+      d.source = this.OFFICIAL_ID;
+      d.researchVersion = 1;
+    });
+    return {
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      sourceLabel: `מאגר רשמי file/Lotto.csv · ${parsed.rows.length} הגרלות · 6/37: ${fmt37} · אחרונה #${last?.drawNumber || "—"} ${last?.date || ""}`,
+      sourceId: this.OFFICIAL_ID,
+      draws: parsed.rows,
+      isDemo: false,
+      isOfficial: true,
+      parseErrors: parsed.errors.length,
+    };
+  },
+
+  async ensureOfficial(force = false) {
+    const cur = this.load();
+    if (!force && cur.isOfficial && cur.sourceId === this.OFFICIAL_ID && cur.draws.length > 1000) {
+      return { changed: false, db: cur };
+    }
+    if (!force && cur.userUpload && cur.draws.length) {
+      return { changed: false, db: cur };
+    }
+    const text = await this.fetchOfficialText();
+    const parsed = this.parseCsv(text);
+    if (!parsed.rows.length) throw new Error("מאגר Lotto.csv ריק או לא פוענח");
+    const db = this.buildOfficialDb(parsed);
+    this.save(db);
+    return { changed: true, db, errors: parsed.errors };
   },
 
   parsePdf(arrayBuffer) {
@@ -199,7 +288,7 @@ JOKLOB.data = {
   },
 
   filterPeriod(draws, period, customRange) {
-    const fmt37 = draws.filter((d) => (d.format || this.detectFormat(d.numbers)) === this.FORMAT_37);
+    const fmt37 = draws.filter((d) => (d.format || this.detectFormat(d.numbers, d.strong)) === this.FORMAT_37);
     const byDate = [...fmt37].filter((d) => d.date).sort((a, b) => a.date.localeCompare(b.date));
     const lastN = (n) => byDate.slice(-n);
     const sinceYears = (y) => {
@@ -224,7 +313,7 @@ JOKLOB.data = {
       case "all":
         return draws;
       case "legacy49":
-        return draws.filter((d) => (d.format || this.detectFormat(d.numbers)) === this.FORMAT_49);
+        return draws.filter((d) => (d.format || this.detectFormat(d.numbers, d.strong)) === this.FORMAT_49);
       case "format37":
         return fmt37;
       case "y5":
