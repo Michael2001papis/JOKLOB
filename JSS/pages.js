@@ -27,8 +27,8 @@ JOKLOB.pages = {
         <b>גילוי נאות:</b> ציון התאמה למודל ≠ סיכוי זכייה.
         אין מספר בטוח ואין זכייה מובטחת.
       </div>
-      <button type="button" class="btn secondary" data-go="about">אודות למשתמש חדש — מה לעשות</button>
-      <div class="card">
+      <details class="card gen-settings" id="gen-settings" open>
+        <summary>הגדרות יצירה</summary>
         <label>סוג</label>
         <div class="seg" id="mode-seg">
           <button type="button" data-mode="regular" class="on">לוטו רגיל</button>
@@ -47,9 +47,9 @@ JOKLOB.pages = {
           <option value="off">כבוי</option>
         </select>
         <label>Seed (ריק = חדש)</label>
-        <input id="seed" dir="ltr" placeholder="לשחזור Exact" />
+        <input id="seed" dir="ltr" placeholder="הדביקו Seed לשחזור מדויק" />
         <button type="button" class="btn big" id="generate">צור מספרים</button>
-      </div>
+      </details>
       <div id="results"></div>
       <div class="actions" id="batch-actions" style="display:none">
         <button type="button" class="btn secondary" id="pdf-btn">ייצוא דוח PDF</button>
